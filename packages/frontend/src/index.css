@@ -9,16 +9,16 @@
   font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
+
   /* LogiVerse Color Variables */
-  --loggie-orange: #F97316;
-  --intelligence-blue: #2563EB;
-  --magic-purple: #7C3AED;
-  --growth-green: #10B981;
-  --energy-yellow: #F59E0B;
-  --challenge-red: #EF4444;
+  --loggie-orange: #f97316;
+  --intelligence-blue: #2563eb;
+  --magic-purple: #7c3aed;
+  --growth-green: #10b981;
+  --energy-yellow: #f59e0b;
+  --challenge-red: #ef4444;
   --carbon: #374151;
-  
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -50,7 +50,14 @@ body {
 }
 
 @keyframes loggieWiggle {
-  0%, 100% { transform: rotate(-1deg) scale(1); }
-  25% { transform: rotate(1deg) scale(1.02); }
-  75% { transform: rotate(-0.5deg) scale(0.98); }
+  0%,
+  100% {
+    transform: rotate(-1deg) scale(1);
+  }
+  25% {
+    transform: rotate(1deg) scale(1.02);
+  }
+  75% {
+    transform: rotate(-0.5deg) scale(0.98);
+  }
 }

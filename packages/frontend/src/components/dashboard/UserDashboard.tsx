@@ -7,7 +7,9 @@ import { MultiplayerHub } from '../multiplayer/MultiplayerHub';
 
 export const UserDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'game' | 'multiplayer'>('dashboard');
+  const [currentView, setCurrentView] = useState<
+    'dashboard' | 'game' | 'multiplayer'
+  >('dashboard');
 
   if (!user) return null;
 
@@ -19,7 +21,7 @@ export const UserDashboard: React.FC = () => {
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -76,7 +78,6 @@ export const UserDashboard: React.FC = () => {
       </motion.div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Panel de usuario */}
         <motion.div
           initial={{ x: -100, opacity: 0 }}
@@ -106,18 +107,24 @@ export const UserDashboard: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-white/90 font-semibold mb-2">📧 Email</h3>
-                <p className="text-white/70 font-source text-sm">{user.email}</p>
+                <p className="text-white/70 font-source text-sm">
+                  {user.email}
+                </p>
               </div>
-              
+
               {user.age && (
                 <div className="bg-white/5 rounded-lg p-4">
                   <h3 className="text-white/90 font-semibold mb-2">🎂 Edad</h3>
-                  <p className="text-white/70 font-source text-sm">{user.age} años</p>
+                  <p className="text-white/70 font-source text-sm">
+                    {user.age} años
+                  </p>
                 </div>
               )}
-              
+
               <div className="bg-white/5 rounded-lg p-4">
-                <h3 className="text-white/90 font-semibold mb-2">📅 Miembro desde</h3>
+                <h3 className="text-white/90 font-semibold mb-2">
+                  📅 Miembro desde
+                </h3>
                 <p className="text-white/70 font-source text-sm">
                   {formatDate(user.createdAt)}
                 </p>
@@ -125,7 +132,9 @@ export const UserDashboard: React.FC = () => {
 
               {user.lastLogin && (
                 <div className="bg-white/5 rounded-lg p-4">
-                  <h3 className="text-white/90 font-semibold mb-2">🕐 Último acceso</h3>
+                  <h3 className="text-white/90 font-semibold mb-2">
+                    🕐 Último acceso
+                  </h3>
                   <p className="text-white/70 font-source text-sm">
                     {formatDate(user.lastLogin)}
                   </p>
@@ -167,7 +176,7 @@ export const UserDashboard: React.FC = () => {
                   {user.logicPoints}
                 </p>
               </div>
-              
+
               <div className="bg-energy-yellow/20 border border-energy-yellow/40 rounded-lg p-4 text-center">
                 <h3 className="text-energy-yellow font-semibold text-lg mb-2">
                   Puntuación Total
@@ -176,13 +185,15 @@ export const UserDashboard: React.FC = () => {
                   {user.totalScore}
                 </p>
               </div>
-              
+
               <div className="bg-magic-purple/20 border border-magic-purple/40 rounded-lg p-4 text-center">
                 <h3 className="text-magic-purple font-semibold text-lg mb-2">
                   Mundo Actual
                 </h3>
                 <p className="text-white text-lg font-orbitron font-bold">
-                  {user.currentWorld === 'villa-verdad' ? 'Villa Verdad' : user.currentWorld}
+                  {user.currentWorld === 'villa-verdad'
+                    ? 'Villa Verdad'
+                    : user.currentWorld}
                 </p>
               </div>
             </div>
@@ -195,7 +206,7 @@ export const UserDashboard: React.FC = () => {
                     🌱 Villa Verdad
                   </h3>
                   <p className="text-white/90 font-source mb-3">
-                    ¡Tu aventura lógica está esperándote! Domina los fundamentos 
+                    ¡Tu aventura lógica está esperándote! Domina los fundamentos
                     de la lógica matemática con 5 niveles emocionantes.
                   </p>
                   <div className="flex items-center space-x-4 text-sm text-white/80">
@@ -213,7 +224,7 @@ export const UserDashboard: React.FC = () => {
                   />
                 </div>
               </div>
-              
+
               <motion.button
                 onClick={handleEnterGame}
                 className="w-full mt-6 bg-energy-yellow hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-lg text-lg transition-all duration-200 hover:scale-105 shadow-loggie"
@@ -241,12 +252,14 @@ export const UserDashboard: React.FC = () => {
                   <span className="text-3xl">⚔️</span>
                   <div className="text-center">
                     <div className="font-black">¡BATALLAS LÓGICAS!</div>
-                    <div className="text-sm opacity-90">Multijugador en tiempo real</div>
+                    <div className="text-sm opacity-90">
+                      Multijugador en tiempo real
+                    </div>
                   </div>
                   <span className="text-3xl">🏆</span>
                 </div>
               </motion.button>
-              
+
               {/* Estadísticas rápidas */}
               <div className="mt-3 flex justify-center space-x-6 text-sm text-white/70">
                 <span>👥 89 online</span>
@@ -258,7 +271,9 @@ export const UserDashboard: React.FC = () => {
             {/* Próximos mundos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="bg-white/10 border border-white/20 rounded-lg p-4 opacity-60">
-                <h4 className="text-white font-semibold mb-2">🕵️ Ciudad Sherlock</h4>
+                <h4 className="text-white font-semibold mb-2">
+                  🕵️ Ciudad Sherlock
+                </h4>
                 <p className="text-white/70 font-source text-sm mb-3">
                   Deducción y razonamiento avanzado
                 </p>
@@ -266,7 +281,7 @@ export const UserDashboard: React.FC = () => {
                   🔒 Se desbloquea al completar Villa Verdad
                 </div>
               </div>
-              
+
               <div className="bg-white/10 border border-white/20 rounded-lg p-4 opacity-60">
                 <h4 className="text-white font-semibold mb-2">⚖️ Corte Real</h4>
                 <p className="text-white/70 font-source text-sm mb-3">
@@ -285,7 +300,9 @@ export const UserDashboard: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-white/90 font-medium mb-2">📚 Conceptos:</h4>
+                  <h4 className="text-white/90 font-medium mb-2">
+                    📚 Conceptos:
+                  </h4>
                   <ul className="text-white/70 font-source text-sm space-y-1">
                     <li>• Declaraciones verdaderas vs falsas</li>
                     <li>• Patrones y secuencias lógicas</li>
@@ -295,7 +312,9 @@ export const UserDashboard: React.FC = () => {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-white/90 font-medium mb-2">🏆 Recompensas:</h4>
+                  <h4 className="text-white/90 font-medium mb-2">
+                    🏆 Recompensas:
+                  </h4>
                   <ul className="text-white/70 font-source text-sm space-y-1">
                     <li>• Puntos de lógica y experiencia</li>
                     <li>• Nuevos accesorios para Loggie</li>
