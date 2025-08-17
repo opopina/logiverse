@@ -141,7 +141,7 @@ export interface GameState {
 // Respuestas de la API
 export interface GameResponse {
   success: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
   message: string;
   loggieResponse?: LoggieResponse;
 }

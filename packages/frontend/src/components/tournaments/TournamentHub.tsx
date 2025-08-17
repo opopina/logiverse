@@ -1,5 +1,5 @@
 // 🏆 TournamentHub - Centro de Torneos de LogiVerse
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Users, Clock, Calendar, Star, Zap, Crown, Target, Gift } from 'lucide-react';
 
@@ -85,7 +85,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
   };
 
   // 🎮 Crear torneo de prueba
-  const createTestTournament = async () => {
+  const createTestTournament = useCallback(async () => {
     try {
       const response = await fetch('/api/dev/create-tournament', {
         method: 'POST',
@@ -103,7 +103,24 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
     } catch (error) {
       console.error('Error creating test tournament:', error);
     }
-  };
+  }, []);
+
+  // 🎯 Handlers estables con useCallback para evitar re-renders
+  const handleJoinTournament = useCallback((tournamentId: string) => {
+    joinTournament(tournamentId);
+  }, [joinTournament]);
+
+  const handleSelectTournament = useCallback((tournament: Tournament) => {
+    setSelectedTournament(tournament);
+  }, []);
+
+  const handleCloseTournamentModal = useCallback(() => {
+    setSelectedTournament(null);
+  }, []);
+
+  const handleModalClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
 
   useEffect(() => {
     fetchTournaments();
@@ -371,7 +388,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                   <div className="space-y-2">
                     {tournament.status === 'REGISTRATION_OPEN' && (
                       <button
-                        onClick={() => joinTournament(tournament.id)}
+                        onClick={() => handleJoinTournament(tournament.id)}
                         disabled={joinLoading === tournament.id || tournament._count.participants >= tournament.maxParticipants}
                         className={`w-full py-3 rounded-xl font-bold transition-all duration-300 ${
                           tournament._count.participants >= tournament.maxParticipants
@@ -399,7 +416,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                     )}
 
                     <button
-                      onClick={() => setSelectedTournament(tournament)}
+                      onClick={() => handleSelectTournament(tournament)}
                       className="w-full py-2 rounded-xl border border-white/30 text-white hover:bg-white/10 transition-all duration-300"
                     >
                       👁️ Ver Detalles
@@ -420,21 +437,21 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-            onClick={() => setSelectedTournament(null)}
+            onClick={handleCloseTournamentModal}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               className="bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleModalClick}
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-white">
                   {selectedTournament.name}
                 </h2>
                 <button
-                  onClick={() => setSelectedTournament(null)}
+                  onClick={handleCloseTournamentModal}
                   className="text-white hover:text-red-400 transition-colors"
                 >
                   ✕

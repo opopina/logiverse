@@ -19,7 +19,7 @@ export interface AuthResponse {
   user?: User;
   token?: string;
   message: string;
-  errors?: any[];
+  errors?: string[];
 }
 
 export interface LoginCredentials {

@@ -33,7 +33,7 @@ export const useAILoggie = (): UseAILoggieResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const makeRequest = async (endpoint: string, data: any): Promise<LoggieResponse | null> => {
+  const makeRequest = async (endpoint: string, data: Record<string, unknown>): Promise<LoggieResponse | null> => {
     setIsLoading(true);
     setError(null);
 

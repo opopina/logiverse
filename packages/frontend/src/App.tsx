@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoggieAvatar from './components/loggie/LoggieAvatar';
@@ -15,6 +15,23 @@ const AppContent: React.FC = () => {
   const [showConversation, setShowConversation] = useState(false);
 
   const emotions: LoggieEmotion[] = ['friendly', 'happy', 'thinking', 'surprised', 'celebrating', 'challenging'];
+
+  // 🎯 Handlers estables para evitar re-renders
+  const handleRandomEmotion = useCallback(() => {
+    setCurrentEmotion(emotions[Math.floor(Math.random() * emotions.length)]);
+  }, []);
+
+  const handleEmotionClick = useCallback((emotion: LoggieEmotion) => {
+    setCurrentEmotion(emotion);
+  }, []);
+
+  const handleToggleConversation = useCallback(() => {
+    setShowConversation(!showConversation);
+  }, [showConversation]);
+
+  const handleShowAuthModal = useCallback(() => {
+    setShowAuthModal(true);
+  }, []);
 
   const sampleConversation = [
     {
@@ -108,7 +125,7 @@ const AppContent: React.FC = () => {
               size="xl"
               accessory="scarf"
               isAnimated={true}
-              onClick={() => setCurrentEmotion(emotions[Math.floor(Math.random() * emotions.length)])}
+              onClick={handleRandomEmotion}
             />
           </div>
 
@@ -117,7 +134,7 @@ const AppContent: React.FC = () => {
             {emotions.map((emotion) => (
               <button
                 key={emotion}
-                onClick={() => setCurrentEmotion(emotion)}
+                onClick={() => handleEmotionClick(emotion)}
                 className={`loggie-button text-xs py-2 px-3 ${
                   currentEmotion === emotion ? 'bg-energy-yellow' : ''
                 }`}
@@ -130,14 +147,14 @@ const AppContent: React.FC = () => {
           {/* Botones de acción */}
           <div className="space-y-3">
             <button
-              onClick={() => setShowConversation(!showConversation)}
+              onClick={handleToggleConversation}
               className="w-full loggie-button"
             >
               {showConversation ? 'Detener Conversación' : 'Iniciar Conversación'}
             </button>
             
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={handleShowAuthModal}
               className="w-full bg-growth-green hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
             >
               🚀 ¡Unirse a LogiVerse!
@@ -178,7 +195,7 @@ const AppContent: React.FC = () => {
                 {/* Botones de autenticación */}
                 <div className="space-y-3">
                   <button
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={handleShowAuthModal}
                     className="w-full bg-intelligence-blue hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                   >
                     🔐 Iniciar Sesión
@@ -210,7 +227,7 @@ const AppContent: React.FC = () => {
               key={emotion}
               className="text-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
               whileHover={{ scale: 1.05 }}
-              onClick={() => setCurrentEmotion(emotion)}
+              onClick={() => handleEmotionClick(emotion)}
             >
               <LoggieAvatar
                 emotion={emotion}

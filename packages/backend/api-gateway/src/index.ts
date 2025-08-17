@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import { aiService, type LoggieContext } from './services/aiService.js';
 // import MultiplayerService from './services/multiplayerService.js';
 import { TournamentService } from './services/tournamentService.js';
+import { AuthenticatedRequest, LoggieAIRequest, TournamentRequest, MultiplayerRequest } from './types/express.js';
 
 // Load environment variables
 dotenv.config();
@@ -28,7 +29,7 @@ process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY || "your-openai-api-key-
 const prisma = new PrismaClient();
 
 // JWT Authentication middleware
-const authenticateToken = async (req: any, res: express.Response, next: express.NextFunction) => {
+const authenticateToken = async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -330,7 +331,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Logout endpoint
-app.post('/api/auth/logout', authenticateToken, async (req: any, res) => {
+app.post('/api/auth/logout', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -356,7 +357,7 @@ app.post('/api/auth/logout', authenticateToken, async (req: any, res) => {
 });
 
 // Get current user info
-app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
+app.get('/api/auth/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     res.json({
       success: true,
@@ -372,7 +373,7 @@ app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
 });
 
 // Game progress routes
-app.get('/api/game/progress', authenticateToken, async (req: any, res) => {
+app.get('/api/game/progress', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const userId = req.user.id;
     
@@ -545,7 +546,7 @@ app.post('/api/loggie/chat', async (req, res) => {
 });
 
 // 🤖 AI-Powered Loggie Responses for Game Levels
-app.post('/api/loggie/level-start', authenticateToken, async (req: any, res) => {
+app.post('/api/loggie/level-start', authenticateToken, async (req: LoggieAIRequest, res) => {
   try {
     const levelStartSchema = z.object({
       worldId: z.string(),
@@ -578,7 +579,7 @@ app.post('/api/loggie/level-start', authenticateToken, async (req: any, res) => 
   }
 });
 
-app.post('/api/loggie/hint', authenticateToken, async (req: any, res) => {
+app.post('/api/loggie/hint', authenticateToken, async (req: LoggieAIRequest, res) => {
   try {
     const hintSchema = z.object({
       worldId: z.string(),
@@ -609,7 +610,7 @@ app.post('/api/loggie/hint', authenticateToken, async (req: any, res) => {
   }
 });
 
-app.post('/api/loggie/feedback', authenticateToken, async (req: any, res) => {
+app.post('/api/loggie/feedback', authenticateToken, async (req: LoggieAIRequest, res) => {
   try {
     const feedbackSchema = z.object({
       worldId: z.string(),
@@ -643,7 +644,7 @@ app.post('/api/loggie/feedback', authenticateToken, async (req: any, res) => {
   }
 });
 
-app.post('/api/loggie/encouragement', authenticateToken, async (req: any, res) => {
+app.post('/api/loggie/encouragement', authenticateToken, async (req: LoggieAIRequest, res) => {
   try {
     const encouragementSchema = z.object({
       worldId: z.string(),
@@ -674,7 +675,7 @@ app.post('/api/loggie/encouragement', authenticateToken, async (req: any, res) =
   }
 });
 
-app.post('/api/loggie/custom-hint', authenticateToken, async (req: any, res) => {
+app.post('/api/loggie/custom-hint', authenticateToken, async (req: LoggieAIRequest, res) => {
   try {
     const customHintSchema = z.object({
       worldId: z.string(),
@@ -718,7 +719,7 @@ app.post('/api/loggie/custom-hint', authenticateToken, async (req: any, res) => 
 // 🚀 RUTAS MULTIJUGADOR ÉPICAS - ¡LA REVOLUCIÓN DE LOGIVERSE!
 
 // Obtener salas disponibles
-app.get('/api/multiplayer/rooms', authenticateToken, async (req: any, res) => {
+app.get('/api/multiplayer/rooms', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     // Mock data para empezar - pronto con datos reales
     const mockRooms = [
@@ -785,7 +786,7 @@ app.get('/api/multiplayer/leaderboard', async (req, res) => {
 });
 
 // Obtener estadísticas de jugador
-app.get('/api/multiplayer/stats', authenticateToken, async (req: any, res) => {
+app.get('/api/multiplayer/stats', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     // Mock stats - pronto con datos reales del usuario
     const mockStats = {
@@ -852,7 +853,7 @@ app.get('/api/tournaments/active', async (req, res) => {
 });
 
 // Unirse a un torneo (inicializado después del tournamentService)
-app.post('/api/tournaments/:tournamentId/join', authenticateToken, async (req: any, res) => {
+app.post('/api/tournaments/:tournamentId/join', authenticateToken, async (req: TournamentRequest, res) => {
   try {
     const { tournamentId } = req.params;
     const userId = req.user.userId;
@@ -998,7 +999,7 @@ io.on('connection', (socket) => {
 });
 
 // Error handling middleware
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled error:', error);
   res.status(500).json({
     success: false,
