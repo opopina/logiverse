@@ -1,0 +1,60 @@
+{
+  "name": "logiverse",
+  "version": "1.0.0",
+  "description": "LogiVerse - El universo donde la lógica cobra vida 🦊",
+  "private": true,
+  "workspaces": [
+    "packages/frontend",
+    "packages/backend/*",
+    "packages/ai-engine",
+    "packages/mobile",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "dev:backend": "npm run dev --workspace=packages/backend/api-gateway",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "setup": "npm install && npm run setup --workspaces",
+    "db:setup": "./scripts/setup-db.sh",
+    "db:start": "docker-compose up -d postgres redis",
+    "db:stop": "docker-compose down",
+    "db:reset": "docker-compose down -v && npm run db:setup",
+    "db:studio": "cd packages/backend/api-gateway && npx prisma studio",
+    "db:migrate": "cd packages/backend/api-gateway && npx prisma db push"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "education",
+    "logic",
+    "game",
+    "multiplayer",
+    "ai",
+    "learning"
+  ],
+  "author": "LogiVerse Team",
+  "license": "MIT",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
+  }
+}
