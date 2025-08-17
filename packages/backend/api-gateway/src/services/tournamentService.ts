@@ -1,7 +1,12 @@
 // 🏆 Servicio de Torneos para LogiVerse
 // Sistema automático de torneos de fin de semana
 
-import { PrismaClient, TournamentType, TournamentStatus, MatchStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  TournamentType,
+  TournamentStatus,
+  MatchStatus,
+} from '@prisma/client';
 import { Server as SocketIOServer } from 'socket.io';
 
 export interface TournamentSettings {
@@ -143,7 +148,7 @@ export class TournamentService {
     try {
       const tournament = await this.prisma.tournament.findUnique({
         where: { id: tournamentId },
-        include: { 
+        include: {
           participants: {
             include: {
               user: {
@@ -163,10 +168,15 @@ export class TournamentService {
       }
 
       // 🎲 Mezclar participantes aleatoriamente
-      const shuffledParticipants = this.shuffleArray([...tournament.participants]);
-      
+      const shuffledParticipants = this.shuffleArray([
+        ...tournament.participants,
+      ]);
+
       // 🏗️ Generar bracket inicial
-      const bracket = await this.generateBracket(tournamentId, shuffledParticipants);
+      const bracket = await this.generateBracket(
+        tournamentId,
+        shuffledParticipants
+      );
 
       // 📝 Actualizar estado del torneo
       await this.prisma.tournament.update({
@@ -195,7 +205,7 @@ export class TournamentService {
 
   // 🎯 Generar bracket de eliminación
   private async generateBracket(
-    tournamentId: string, 
+    tournamentId: string,
     participants: any[]
   ): Promise<TournamentBracket> {
     const rounds: TournamentRound[] = [];
@@ -220,7 +230,9 @@ export class TournamentService {
             player1Id: player1.userId,
             player2Id: player2?.userId,
             status: 'PENDING',
-            scheduledAt: new Date(Date.now() + (roundNumber - 1) * 30 * 60 * 1000), // 30 min entre rondas
+            scheduledAt: new Date(
+              Date.now() + (roundNumber - 1) * 30 * 60 * 1000
+            ), // 30 min entre rondas
           },
         });
 
@@ -304,7 +316,10 @@ export class TournamentService {
   }
 
   // 🔄 Verificar y avanzar ronda
-  private async checkAndAdvanceRound(tournamentId: string, currentRound: number) {
+  private async checkAndAdvanceRound(
+    tournamentId: string,
+    currentRound: number
+  ) {
     const roundMatches = await this.prisma.tournamentMatch.findMany({
       where: {
         tournamentId,
@@ -312,7 +327,9 @@ export class TournamentService {
       },
     });
 
-    const allMatchesComplete = roundMatches.every(match => match.status === 'COMPLETED');
+    const allMatchesComplete = roundMatches.every(
+      match => match.status === 'COMPLETED'
+    );
 
     if (allMatchesComplete) {
       // 🏆 Si es la ronda final, terminar torneo
@@ -327,7 +344,10 @@ export class TournamentService {
   }
 
   // 📈 Avanzar ganadores a la siguiente ronda
-  private async advanceToNextRound(tournamentId: string, completedRound: number) {
+  private async advanceToNextRound(
+    tournamentId: string,
+    completedRound: number
+  ) {
     const completedMatches = await this.prisma.tournamentMatch.findMany({
       where: {
         tournamentId,
@@ -336,7 +356,9 @@ export class TournamentService {
       },
     });
 
-    const winners = completedMatches.map(match => match.winnerId).filter(Boolean);
+    const winners = completedMatches
+      .map(match => match.winnerId)
+      .filter(Boolean);
 
     // 🎮 Crear matches para la siguiente ronda
     const nextRound = completedRound + 1;
@@ -424,7 +446,9 @@ export class TournamentService {
       name: '🌱 Villa Verdad Championship',
       type: 'SINGLE_ELIMINATION',
       maxParticipants: 16,
-      registrationStart: new Date(nextSaturday.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 días antes
+      registrationStart: new Date(
+        nextSaturday.getTime() - 2 * 24 * 60 * 60 * 1000
+      ), // 2 días antes
       registrationEnd: new Date(nextSaturday.getTime() - 1 * 60 * 60 * 1000), // 1 hora antes
       tournamentStart: nextSaturday,
       entryFee: 0,
@@ -434,15 +458,18 @@ export class TournamentService {
 
     // 🏆 Torneo del Domingo - Loggie's Grand Prix
     await this.createAutomaticTournament({
-      name: '🦊 Loggie\'s Grand Prix',
+      name: "🦊 Loggie's Grand Prix",
       type: 'SINGLE_ELIMINATION',
       maxParticipants: 32,
-      registrationStart: new Date(nextSunday.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 días antes
+      registrationStart: new Date(
+        nextSunday.getTime() - 2 * 24 * 60 * 60 * 1000
+      ), // 2 días antes
       registrationEnd: new Date(nextSunday.getTime() - 1 * 60 * 60 * 1000), // 1 hora antes
       tournamentStart: nextSunday,
       entryFee: 0,
       prizePool: 2000,
-      description: '¡El torneo más épico de LogiVerse con Loggie como anfitrión!',
+      description:
+        '¡El torneo más épico de LogiVerse con Loggie como anfitrión!',
     });
   }
 
@@ -454,7 +481,7 @@ export class TournamentService {
     return nextSaturday;
   }
 
-  // 📅 Obtener próximo domingo  
+  // 📅 Obtener próximo domingo
   private getNextSunday(date: Date): Date {
     const nextSunday = new Date(date);
     nextSunday.setDate(date.getDate() + ((7 - date.getDay()) % 7));
