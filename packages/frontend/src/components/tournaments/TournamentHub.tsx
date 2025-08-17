@@ -1,7 +1,17 @@
 // 🏆 TournamentHub - Centro de Torneos de LogiVerse
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Users, Clock, Calendar, Star, Zap, Crown, Target, Gift } from 'lucide-react';
+import {
+  Trophy,
+  Users,
+  Clock,
+  Calendar,
+  Star,
+  Zap,
+  Crown,
+  Target,
+  Gift,
+} from 'lucide-react';
 
 interface Tournament {
   id: string;
@@ -35,7 +45,8 @@ interface TournamentHubProps {
 const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
   const [joinLoading, setJoinLoading] = useState<string | null>(null);
 
   // 🔄 Cargar torneos activos
@@ -62,7 +73,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
       const response = await fetch(`/api/tournaments/${tournamentId}/join`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -115,10 +126,14 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
   // 🎨 Obtener color según el tipo de torneo
   const getTournamentColor = (type: string) => {
     switch (type) {
-      case 'SINGLE_ELIMINATION': return 'from-red-500 to-orange-500';
-      case 'DOUBLE_ELIMINATION': return 'from-purple-500 to-pink-500';
-      case 'ROUND_ROBIN': return 'from-blue-500 to-cyan-500';
-      default: return 'from-gray-500 to-gray-600';
+      case 'SINGLE_ELIMINATION':
+        return 'from-red-500 to-orange-500';
+      case 'DOUBLE_ELIMINATION':
+        return 'from-purple-500 to-pink-500';
+      case 'ROUND_ROBIN':
+        return 'from-blue-500 to-cyan-500';
+      default:
+        return 'from-gray-500 to-gray-600';
     }
   };
 
@@ -153,7 +168,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           className="text-6xl"
         >
           🏆
@@ -197,16 +212,18 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
 
         {/* 📊 Estadísticas rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center"
           >
             <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{tournaments.length}</div>
+            <div className="text-2xl font-bold text-white">
+              {tournaments.length}
+            </div>
             <div className="text-sm text-purple-200">Torneos Activos</div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center"
           >
@@ -217,7 +234,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
             <div className="text-sm text-purple-200">Participantes</div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center"
           >
@@ -228,7 +245,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
             <div className="text-sm text-purple-200">Premio Total</div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center"
           >
@@ -273,7 +290,9 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                 className="bg-white/10 backdrop-blur-sm rounded-xl overflow-hidden border border-white/20"
               >
                 {/* 🎨 Header colorido */}
-                <div className={`bg-gradient-to-r ${getTournamentColor(tournament.type)} p-4`}>
+                <div
+                  className={`bg-gradient-to-r ${getTournamentColor(tournament.type)} p-4`}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Crown className="w-6 h-6 text-white" />
@@ -281,14 +300,17 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                         {tournament.type.replace('_', ' ')}
                       </span>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      tournament.status === 'REGISTRATION_OPEN' 
-                        ? 'bg-green-500 text-white'
-                        : tournament.status === 'IN_PROGRESS'
-                        ? 'bg-yellow-500 text-black'
-                        : 'bg-gray-500 text-white'
-                    }`}>
-                      {tournament.status === 'REGISTRATION_OPEN' && '🟢 ABIERTO'}
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        tournament.status === 'REGISTRATION_OPEN'
+                          ? 'bg-green-500 text-white'
+                          : tournament.status === 'IN_PROGRESS'
+                            ? 'bg-yellow-500 text-black'
+                            : 'bg-gray-500 text-white'
+                      }`}
+                    >
+                      {tournament.status === 'REGISTRATION_OPEN' &&
+                        '🟢 ABIERTO'}
                       {tournament.status === 'IN_PROGRESS' && '🟡 EN CURSO'}
                       {tournament.status === 'COMPLETED' && '🏁 TERMINADO'}
                     </div>
@@ -312,7 +334,8 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                         Participantes
                       </span>
                       <span className="text-white font-bold">
-                        {tournament._count.participants}/{tournament.maxParticipants}
+                        {tournament._count.participants}/
+                        {tournament.maxParticipants}
                       </span>
                     </div>
 
@@ -353,13 +376,20 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                   <div className="mb-4">
                     <div className="flex justify-between text-xs text-purple-200 mb-1">
                       <span>Progreso</span>
-                      <span>{Math.round((tournament._count.participants / tournament.maxParticipants) * 100)}%</span>
+                      <span>
+                        {Math.round(
+                          (tournament._count.participants /
+                            tournament.maxParticipants) *
+                            100
+                        )}
+                        %
+                      </span>
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ 
-                          width: `${(tournament._count.participants / tournament.maxParticipants) * 100}%` 
+                        animate={{
+                          width: `${(tournament._count.participants / tournament.maxParticipants) * 100}%`,
                         }}
                         transition={{ duration: 1, delay: index * 0.1 }}
                         className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
@@ -372,25 +402,35 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                     {tournament.status === 'REGISTRATION_OPEN' && (
                       <button
                         onClick={() => joinTournament(tournament.id)}
-                        disabled={joinLoading === tournament.id || tournament._count.participants >= tournament.maxParticipants}
+                        disabled={
+                          joinLoading === tournament.id ||
+                          tournament._count.participants >=
+                            tournament.maxParticipants
+                        }
                         className={`w-full py-3 rounded-xl font-bold transition-all duration-300 ${
-                          tournament._count.participants >= tournament.maxParticipants
+                          tournament._count.participants >=
+                          tournament.maxParticipants
                             ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
                             : joinLoading === tournament.id
-                            ? 'bg-orange-500 text-white cursor-wait'
-                            : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
+                              ? 'bg-orange-500 text-white cursor-wait'
+                              : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
                         }`}
                       >
                         {joinLoading === tournament.id ? (
                           <span className="flex items-center justify-center">
                             <motion.div
                               animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: 'linear',
+                              }}
                               className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                             />
                             Uniéndose...
                           </span>
-                        ) : tournament._count.participants >= tournament.maxParticipants ? (
+                        ) : tournament._count.participants >=
+                          tournament.maxParticipants ? (
                           '🔒 Torneo Lleno'
                         ) : (
                           '🎯 ¡Unirse al Torneo!'
@@ -427,7 +467,7 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               className="bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-white">
@@ -443,16 +483,20 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
 
               <div className="space-y-4 text-white">
                 <p>{selectedTournament.description}</p>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <strong>Tipo:</strong> {selectedTournament.type.replace('_', ' ')}
+                    <strong>Tipo:</strong>{' '}
+                    {selectedTournament.type.replace('_', ' ')}
                   </div>
                   <div>
-                    <strong>Participantes:</strong> {selectedTournament._count.participants}/{selectedTournament.maxParticipants}
+                    <strong>Participantes:</strong>{' '}
+                    {selectedTournament._count.participants}/
+                    {selectedTournament.maxParticipants}
                   </div>
                   <div>
-                    <strong>Premio:</strong> {selectedTournament.prizePool} puntos
+                    <strong>Premio:</strong> {selectedTournament.prizePool}{' '}
+                    puntos
                   </div>
                   <div>
                     <strong>Estado:</strong> {selectedTournament.status}
@@ -462,12 +506,17 @@ const TournamentHub: React.FC<TournamentHubProps> = ({ onBack }) => {
                 <div>
                   <strong>Participantes registrados:</strong>
                   <div className="mt-2 space-y-1">
-                    {selectedTournament.participants.map((participant, index) => (
-                      <div key={participant.id} className="flex items-center space-x-2">
-                        <span className="text-purple-200">#{index + 1}</span>
-                        <span>{participant.user.username}</span>
-                      </div>
-                    ))}
+                    {selectedTournament.participants.map(
+                      (participant, index) => (
+                        <div
+                          key={participant.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <span className="text-purple-200">#{index + 1}</span>
+                          <span>{participant.user.username}</span>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
