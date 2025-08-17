@@ -8,7 +8,14 @@ import { aiService } from './aiService.js';
 export interface Room {
   id: string;
   name: string;
-  type: 'CASUAL' | 'RANKED' | 'TOURNAMENT' | 'PRIVATE' | 'EDUCATIONAL' | 'SPEED' | 'COOPERATIVE';
+  type:
+    | 'CASUAL'
+    | 'RANKED'
+    | 'TOURNAMENT'
+    | 'PRIVATE'
+    | 'EDUCATIONAL'
+    | 'SPEED'
+    | 'COOPERATIVE';
   maxPlayers: number;
   currentPlayers: number;
   isPrivate: boolean;
@@ -66,7 +73,13 @@ export interface SessionParticipant {
 export interface LoggieModeratorContext {
   roomId: string;
   sessionId: string;
-  event: 'session_start' | 'player_answer' | 'hint_request' | 'session_end' | 'player_struggle' | 'celebration';
+  event:
+    | 'session_start'
+    | 'player_answer'
+    | 'hint_request'
+    | 'session_end'
+    | 'player_struggle'
+    | 'celebration';
   participants: SessionParticipant[];
   currentLevel: any;
   metadata?: any;
@@ -86,20 +99,20 @@ class MultiplayerService {
   }
 
   private initializeSocketHandlers() {
-    this.io.on('connection', (socket) => {
+    this.io.on('connection', socket => {
       console.log(`🦊 Jugador conectado al multijugador: ${socket.id}`);
 
       // Eventos de salas
-      socket.on('join_room', (data) => this.handleJoinRoom(socket, data));
-      socket.on('leave_room', (data) => this.handleLeaveRoom(socket, data));
-      socket.on('create_room', (data) => this.handleCreateRoom(socket, data));
-      socket.on('room_message', (data) => this.handleRoomMessage(socket, data));
+      socket.on('join_room', data => this.handleJoinRoom(socket, data));
+      socket.on('leave_room', data => this.handleLeaveRoom(socket, data));
+      socket.on('create_room', data => this.handleCreateRoom(socket, data));
+      socket.on('room_message', data => this.handleRoomMessage(socket, data));
 
       // Eventos de juego
-      socket.on('start_game', (data) => this.handleStartGame(socket, data));
-      socket.on('submit_answer', (data) => this.handleSubmitAnswer(socket, data));
-      socket.on('request_hint', (data) => this.handleRequestHint(socket, data));
-      socket.on('player_ready', (data) => this.handlePlayerReady(socket, data));
+      socket.on('start_game', data => this.handleStartGame(socket, data));
+      socket.on('submit_answer', data => this.handleSubmitAnswer(socket, data));
+      socket.on('request_hint', data => this.handleRequestHint(socket, data));
+      socket.on('player_ready', data => this.handlePlayerReady(socket, data));
 
       // Desconexión
       socket.on('disconnect', () => this.handleDisconnect(socket));
@@ -108,13 +121,16 @@ class MultiplayerService {
 
   // 🏠 GESTIÓN DE SALAS
 
-  async createRoom(creatorId: string, roomData: {
-    name: string;
-    type: Room['type'];
-    maxPlayers: number;
-    isPrivate: boolean;
-    settings: RoomSettings;
-  }): Promise<Room> {
+  async createRoom(
+    creatorId: string,
+    roomData: {
+      name: string;
+      type: Room['type'];
+      maxPlayers: number;
+      isPrivate: boolean;
+      settings: RoomSettings;
+    }
+  ): Promise<Room> {
     // Crear sala en la base de datos
     const dbRoom = await this.prisma.multiplayerRoom.create({
       data: {
@@ -130,10 +146,10 @@ class MultiplayerService {
         creator: { select: { id: true, username: true } },
         participants: {
           include: {
-            user: { select: { id: true, username: true } }
-          }
-        }
-      }
+            user: { select: { id: true, username: true } },
+          },
+        },
+      },
     });
 
     // Crear sala en memoria
@@ -158,7 +174,11 @@ class MultiplayerService {
     return room;
   }
 
-  async joinRoom(userId: string, roomId: string, inviteCode?: string): Promise<{ success: boolean; room?: Room; error?: string }> {
+  async joinRoom(
+    userId: string,
+    roomId: string,
+    inviteCode?: string
+  ): Promise<{ success: boolean; room?: Room; error?: string }> {
     const room = this.activeRooms.get(roomId);
     if (!room) {
       return { success: false, error: 'Sala no encontrada' };
@@ -172,7 +192,10 @@ class MultiplayerService {
       return { success: false, error: 'Sala llena' };
     }
 
-    if (room.isPrivate && (!inviteCode || inviteCode !== await this.getRoomInviteCode(roomId))) {
+    if (
+      room.isPrivate &&
+      (!inviteCode || inviteCode !== (await this.getRoomInviteCode(roomId)))
+    ) {
       return { success: false, error: 'Código de invitación inválido' };
     }
 
@@ -189,13 +212,13 @@ class MultiplayerService {
         userId,
         role: 'PLAYER',
         status: 'ACTIVE',
-      }
+      },
     });
 
     // Obtener datos del usuario
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, username: true }
+      select: { id: true, username: true },
     });
 
     if (!user) {
@@ -238,7 +261,7 @@ class MultiplayerService {
 
     // Remover de la base de datos
     await this.prisma.roomParticipant.deleteMany({
-      where: { roomId, userId }
+      where: { roomId, userId },
     });
 
     // Remover de la sala en memoria
@@ -253,25 +276,33 @@ class MultiplayerService {
     } else {
       // Notificar salida
       this.io.to(roomId).emit('player_left', { roomId, userId });
-      
+
       // Si era el creador, transferir propiedad
       if (room.createdBy === userId && room.participants.length > 0) {
         room.createdBy = room.participants[0].userId;
-        this.io.to(roomId).emit('room_owner_changed', { roomId, newOwnerId: room.createdBy });
+        this.io
+          .to(roomId)
+          .emit('room_owner_changed', { roomId, newOwnerId: room.createdBy });
       }
     }
   }
 
   // 🎮 GESTIÓN DE JUEGOS
 
-  async startGame(roomId: string, initiatorId: string): Promise<{ success: boolean; session?: GameSession; error?: string }> {
+  async startGame(
+    roomId: string,
+    initiatorId: string
+  ): Promise<{ success: boolean; session?: GameSession; error?: string }> {
     const room = this.activeRooms.get(roomId);
     if (!room) {
       return { success: false, error: 'Sala no encontrada' };
     }
 
     if (room.createdBy !== initiatorId) {
-      return { success: false, error: 'Solo el creador puede iniciar el juego' };
+      return {
+        success: false,
+        error: 'Solo el creador puede iniciar el juego',
+      };
     }
 
     if (room.participants.length < 2) {
@@ -296,7 +327,7 @@ class MultiplayerService {
           maxHints: room.settings.maxHints,
           enableAIModerator: room.settings.enableAIModerator,
         },
-      }
+      },
     });
 
     // Crear sesiones individuales para cada jugador
@@ -307,7 +338,7 @@ class MultiplayerService {
             sessionId: dbSession.id,
             userId: participant.userId,
             startTime: new Date(),
-          }
+          },
         })
       )
     );
@@ -342,7 +373,7 @@ class MultiplayerService {
         description: level.description,
         difficulty: level.difficulty,
         content: level.content,
-      }
+      },
     });
 
     // Loggie presenta el desafío
@@ -353,7 +384,11 @@ class MultiplayerService {
     return { success: true, session };
   }
 
-  async submitAnswer(userId: string, sessionId: string, answer: string): Promise<void> {
+  async submitAnswer(
+    userId: string,
+    sessionId: string,
+    answer: string
+  ): Promise<void> {
     const session = this.activeSessions.get(sessionId);
     if (!session) return;
 
@@ -365,7 +400,7 @@ class MultiplayerService {
 
     // Obtener nivel para verificar respuesta
     const level = await this.prisma.gameLevel.findUnique({
-      where: { id: session.levelId }
+      where: { id: session.levelId },
     });
 
     if (!level) return;
@@ -379,7 +414,10 @@ class MultiplayerService {
       const timeBonus = Math.max(0, 100 - participant.timeSpent);
       const hintPenalty = participant.hintsUsed * 10;
       const attemptPenalty = (participant.attempts - 1) * 5;
-      participant.score = Math.max(0, 100 + timeBonus - hintPenalty - attemptPenalty);
+      participant.score = Math.max(
+        0,
+        100 + timeBonus - hintPenalty - attemptPenalty
+      );
     }
 
     // Actualizar en la base de datos
@@ -391,7 +429,7 @@ class MultiplayerService {
         isCorrect,
         score: participant.score,
         endTime: isCorrect ? new Date() : undefined,
-      }
+      },
     });
 
     // Notificar respuesta
@@ -406,7 +444,13 @@ class MultiplayerService {
     // Loggie comenta la respuesta
     const room = this.activeRooms.get(session.roomId);
     if (room?.settings.enableAIModerator) {
-      await this.sendLoggieAnswerFeedback(session.roomId, session, participant, level, isCorrect);
+      await this.sendLoggieAnswerFeedback(
+        session.roomId,
+        session,
+        participant,
+        level,
+        isCorrect
+      );
     }
 
     // Verificar si el juego terminó
@@ -415,7 +459,10 @@ class MultiplayerService {
 
   // 🤖 LOGGIE COMO MODERADOR INTELIGENTE
 
-  private async sendLoggieWelcome(roomId: string, participant: RoomParticipant): Promise<void> {
+  private async sendLoggieWelcome(
+    roomId: string,
+    participant: RoomParticipant
+  ): Promise<void> {
     try {
       const room = this.activeRooms.get(roomId);
       if (!room) return;
@@ -442,13 +489,16 @@ class MultiplayerService {
         emotion: aiResponse.emotion,
         accessory: aiResponse.accessory,
       });
-
     } catch (error) {
       console.error('Error enviando bienvenida de Loggie:', error);
     }
   }
 
-  private async sendLoggieGameStart(roomId: string, session: GameSession, level: any): Promise<void> {
+  private async sendLoggieGameStart(
+    roomId: string,
+    session: GameSession,
+    level: any
+  ): Promise<void> {
     try {
       const aiResponse = await aiService.generateResponse(
         {
@@ -470,23 +520,22 @@ class MultiplayerService {
         emotion: aiResponse.emotion,
         accessory: aiResponse.accessory,
       });
-
     } catch (error) {
       console.error('Error enviando presentación de juego de Loggie:', error);
     }
   }
 
   private async sendLoggieAnswerFeedback(
-    roomId: string, 
-    session: GameSession, 
-    participant: SessionParticipant, 
-    level: any, 
+    roomId: string,
+    session: GameSession,
+    participant: SessionParticipant,
+    level: any,
     isCorrect: boolean
   ): Promise<void> {
     try {
       const user = await this.prisma.user.findUnique({
         where: { id: participant.userId },
-        select: { username: true }
+        select: { username: true },
       });
 
       if (!user) return;
@@ -517,13 +566,16 @@ class MultiplayerService {
         emotion: aiResponse.emotion,
         accessory: aiResponse.accessory,
       });
-
     } catch (error) {
       console.error('Error enviando feedback de Loggie:', error);
     }
   }
 
-  private async sendLoggieMessage(roomId: string, content: string, metadata: any): Promise<void> {
+  private async sendLoggieMessage(
+    roomId: string,
+    content: string,
+    metadata: any
+  ): Promise<void> {
     // Guardar en la base de datos
     const message = await this.prisma.roomMessage.create({
       data: {
@@ -532,7 +584,7 @@ class MultiplayerService {
         type: 'AI_MODERATOR',
         content,
         metadata,
-      }
+      },
     });
 
     // Enviar a todos en la sala
@@ -546,7 +598,7 @@ class MultiplayerService {
         id: 'loggie-ai',
         username: 'Loggie 🦊',
         isAI: true,
-      }
+      },
     });
   }
 
@@ -559,7 +611,7 @@ class MultiplayerService {
   private async getRoomInviteCode(roomId: string): Promise<string | null> {
     const room = await this.prisma.multiplayerRoom.findUnique({
       where: { id: roomId },
-      select: { inviteCode: true }
+      select: { inviteCode: true },
     });
     return room?.inviteCode || null;
   }
@@ -570,7 +622,7 @@ class MultiplayerService {
         worldId: { in: settings.worldIds },
         difficulty: { in: settings.difficulty },
         isActive: true,
-      }
+      },
     });
 
     if (levels.length === 0) return null;
@@ -581,13 +633,21 @@ class MultiplayerService {
     // Lógica simplificada de verificación
     // En una implementación real, esto sería más sofisticado
     if (typeof solution === 'object' && solution.correctAnswer) {
-      return userAnswer.toLowerCase().trim() === solution.correctAnswer.toLowerCase().trim();
+      return (
+        userAnswer.toLowerCase().trim() ===
+        solution.correctAnswer.toLowerCase().trim()
+      );
     }
-    return userAnswer.toLowerCase().trim() === solution.toString().toLowerCase().trim();
+    return (
+      userAnswer.toLowerCase().trim() ===
+      solution.toString().toLowerCase().trim()
+    );
   }
 
   private async checkGameEnd(session: GameSession): Promise<void> {
-    const completedPlayers = session.participants.filter(p => p.isCorrect).length;
+    const completedPlayers = session.participants.filter(
+      p => p.isCorrect
+    ).length;
     const totalPlayers = session.participants.length;
 
     // Si todos respondieron correctamente o si pasó el tiempo límite
@@ -605,7 +665,7 @@ class MultiplayerService {
       if (a.isCorrect && !b.isCorrect) return -1;
       if (!a.isCorrect && b.isCorrect) return 1;
       if (a.isCorrect && b.isCorrect) {
-        return (a.timeSpent + a.attempts * 10) - (b.timeSpent + b.attempts * 10);
+        return a.timeSpent + a.attempts * 10 - (b.timeSpent + b.attempts * 10);
       }
       return b.score - a.score;
     });
@@ -628,9 +688,9 @@ class MultiplayerService {
             timeSpent: p.timeSpent,
             attempts: p.attempts,
             isCorrect: p.isCorrect,
-          }))
-        }
-      }
+          })),
+        },
+      },
     });
 
     // Actualizar estadísticas de jugadores
@@ -670,12 +730,14 @@ class MultiplayerService {
         },
         update: {
           totalGamesPlayed: { increment: 1 },
-          totalGamesWon: participant.ranking === 1 ? { increment: 1 } : undefined,
+          totalGamesWon:
+            participant.ranking === 1 ? { increment: 1 } : undefined,
           totalScore: { increment: participant.score },
           winStreak: participant.ranking === 1 ? { increment: 1 } : 0,
-          maxWinStreak: participant.ranking === 1 ? { increment: 1 } : undefined,
+          maxWinStreak:
+            participant.ranking === 1 ? { increment: 1 } : undefined,
           lastActiveAt: new Date(),
-        }
+        },
       });
     }
   }
@@ -688,16 +750,26 @@ class MultiplayerService {
 
   // 🎯 HANDLERS DE SOCKET
 
-  private async handleJoinRoom(socket: any, data: { roomId: string; userId: string; inviteCode?: string }) {
-    const result = await this.joinRoom(data.userId, data.roomId, data.inviteCode);
+  private async handleJoinRoom(
+    socket: any,
+    data: { roomId: string; userId: string; inviteCode?: string }
+  ) {
+    const result = await this.joinRoom(
+      data.userId,
+      data.roomId,
+      data.inviteCode
+    );
     socket.emit('join_room_result', result);
-    
+
     if (result.success) {
       socket.join(data.roomId);
     }
   }
 
-  private async handleLeaveRoom(socket: any, data: { roomId: string; userId: string }) {
+  private async handleLeaveRoom(
+    socket: any,
+    data: { roomId: string; userId: string }
+  ) {
     await this.leaveRoom(data.userId, data.roomId);
     socket.leave(data.roomId);
   }
@@ -708,7 +780,10 @@ class MultiplayerService {
     socket.join(room.id);
   }
 
-  private async handleRoomMessage(socket: any, data: { roomId: string; userId: string; content: string }) {
+  private async handleRoomMessage(
+    socket: any,
+    data: { roomId: string; userId: string; content: string }
+  ) {
     // Manejar mensajes de chat en la sala
     const message = await this.prisma.roomMessage.create({
       data: {
@@ -718,8 +793,8 @@ class MultiplayerService {
         content: data.content,
       },
       include: {
-        user: { select: { username: true } }
-      }
+        user: { select: { username: true } },
+      },
     });
 
     this.io.to(data.roomId).emit('room_message', {
@@ -730,24 +805,36 @@ class MultiplayerService {
       sender: {
         id: data.userId,
         username: message.user?.username,
-      }
+      },
     });
   }
 
-  private async handleStartGame(socket: any, data: { roomId: string; initiatorId: string }) {
+  private async handleStartGame(
+    socket: any,
+    data: { roomId: string; initiatorId: string }
+  ) {
     const result = await this.startGame(data.roomId, data.initiatorId);
     socket.emit('start_game_result', result);
   }
 
-  private async handleSubmitAnswer(socket: any, data: { sessionId: string; userId: string; answer: string }) {
+  private async handleSubmitAnswer(
+    socket: any,
+    data: { sessionId: string; userId: string; answer: string }
+  ) {
     await this.submitAnswer(data.userId, data.sessionId, data.answer);
   }
 
-  private async handleRequestHint(socket: any, data: { sessionId: string; userId: string }) {
+  private async handleRequestHint(
+    socket: any,
+    data: { sessionId: string; userId: string }
+  ) {
     // Implementar lógica de pistas
   }
 
-  private async handlePlayerReady(socket: any, data: { roomId: string; userId: string }) {
+  private async handlePlayerReady(
+    socket: any,
+    data: { roomId: string; userId: string }
+  ) {
     // Implementar lógica de estado "listo"
   }
 
@@ -758,10 +845,17 @@ class MultiplayerService {
 
   // 🎯 MÉTODOS PÚBLICOS
 
-  public async getRooms(filters?: { type?: Room['type']; isPrivate?: boolean }): Promise<Room[]> {
+  public async getRooms(filters?: {
+    type?: Room['type'];
+    isPrivate?: boolean;
+  }): Promise<Room[]> {
     return Array.from(this.activeRooms.values()).filter(room => {
       if (filters?.type && room.type !== filters.type) return false;
-      if (filters?.isPrivate !== undefined && room.isPrivate !== filters.isPrivate) return false;
+      if (
+        filters?.isPrivate !== undefined &&
+        room.isPrivate !== filters.isPrivate
+      )
+        return false;
       return true;
     });
   }
@@ -770,8 +864,8 @@ class MultiplayerService {
     return this.prisma.playerStats.findUnique({
       where: { userId },
       include: {
-        user: { select: { username: true } }
-      }
+        user: { select: { username: true } },
+      },
     });
   }
 
@@ -780,8 +874,8 @@ class MultiplayerService {
       take: limit,
       orderBy: { eloRating: 'desc' },
       include: {
-        user: { select: { username: true } }
-      }
+        user: { select: { username: true } },
+      },
     });
   }
 }

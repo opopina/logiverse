@@ -12,13 +12,14 @@ interface GameEngineProps {
   onExit: () => void;
 }
 
-export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, onExit }) => {
+export const GameEngine: React.FC<GameEngineProps> = ({
+  level,
+  onLevelComplete,
+  onExit,
+}) => {
   const { user } = useAuth();
-  const { 
-    getLevelStartResponse, 
-    getHintResponse, 
-    getFeedbackResponse 
-  } = useAILoggie();
+  const { getLevelStartResponse, getHintResponse, getFeedbackResponse } =
+    useAILoggie();
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [userAnswer, setUserAnswer] = useState<string | string[] | number>('');
   const [showHints, setShowHints] = useState(false);
@@ -32,7 +33,8 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
     loggieResponse: LoggieResponse;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentLoggieResponse, setCurrentLoggieResponse] = useState<LoggieResponse | null>(null);
+  const [currentLoggieResponse, setCurrentLoggieResponse] =
+    useState<LoggieResponse | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   // Inicializar sesión de juego
@@ -50,7 +52,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
         hintsUsed: [],
         timeSpent: 0,
         completed: false,
-        perfect: false
+        perfect: false,
       };
       setGameSession(session);
     }
@@ -60,7 +62,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
   useEffect(() => {
     const loadInitialLoggieResponse = async () => {
       if (!level) return;
-      
+
       setIsLoadingAI(true);
       try {
         const aiResponse = await getLevelStartResponse({
@@ -68,20 +70,22 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
           levelId: level.id,
           levelTitle: level.title,
           levelType: level.type,
-          difficulty: level.difficulty
+          difficulty: level.difficulty,
         });
-        
+
         if (aiResponse) {
           setCurrentLoggieResponse(aiResponse);
         }
       } catch (error) {
         console.error('Error loading initial Loggie response:', error);
         // Fallback a respuesta estática
-        const fallbackResponse = villaVerdadLoggieResponses.levelStart[level.levelNumber as keyof typeof villaVerdadLoggieResponses.levelStart] || {
+        const fallbackResponse = villaVerdadLoggieResponses.levelStart[
+          level.levelNumber as keyof typeof villaVerdadLoggieResponses.levelStart
+        ] || {
           text: '¡Hola! Soy Loggie y estoy emocionado de resolver este desafío contigo! 🦊',
           emotion: 'friendly',
           context: 'level-start',
-          accessory: 'scarf'
+          accessory: 'scarf',
         };
         setCurrentLoggieResponse(fallbackResponse);
       } finally {
@@ -112,50 +116,57 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
 
   const calculateScore = (): number => {
     if (!gameSession) return 0;
-    
+
     let score = gameSession.maxScore;
-    
+
     // Penalizar por intentos adicionales
     if (attempts > 1) {
       score -= (attempts - 1) * 10;
     }
-    
+
     // Penalizar por pistas usadas
     const hintPenalty = hintsUsed.reduce((total, hintId) => {
       const hint = level.hints.find(h => h.id === hintId);
       return total + (hint?.cost || 0);
     }, 0);
     score -= hintPenalty;
-    
+
     // Bonus por tiempo restante (si hay límite de tiempo)
     if (level.timeLimit && timeRemaining > 0) {
       const timeBonus = Math.floor((timeRemaining / level.timeLimit) * 20);
       score += timeBonus;
     }
-    
+
     return Math.max(score, 10); // Mínimo 10 puntos
   };
 
-  const getLoggieResponse = (context: 'correct' | 'incorrect' | 'level-start'): LoggieResponse => {
+  const getLoggieResponse = (
+    context: 'correct' | 'incorrect' | 'level-start'
+  ): LoggieResponse => {
     if (context === 'level-start') {
-      return villaVerdadLoggieResponses.levelStart[level.levelNumber as keyof typeof villaVerdadLoggieResponses.levelStart] || {
-        text: '¡Vamos a resolver este desafío juntos! 🦊',
-        emotion: 'friendly',
-        context: 'level-start',
-        accessory: 'scarf'
-      };
+      return (
+        villaVerdadLoggieResponses.levelStart[
+          level.levelNumber as keyof typeof villaVerdadLoggieResponses.levelStart
+        ] || {
+          text: '¡Vamos a resolver este desafío juntos! 🦊',
+          emotion: 'friendly',
+          context: 'level-start',
+          accessory: 'scarf',
+        }
+      );
     }
-    
-    const responses = context === 'correct' 
-      ? villaVerdadLoggieResponses.correct 
-      : villaVerdadLoggieResponses.incorrect;
-    
+
+    const responses =
+      context === 'correct'
+        ? villaVerdadLoggieResponses.correct
+        : villaVerdadLoggieResponses.incorrect;
+
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
   const checkAnswer = (): boolean => {
     const { correctAnswer, type } = level.content;
-    
+
     if (type === 'multiple-choice') {
       return userAnswer === correctAnswer;
     } else if (type === 'true-false') {
@@ -169,19 +180,19 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
         ? userAnswer.every((ans, idx) => ans === correctAnswer[idx])
         : userAnswer === correctAnswer;
     }
-    
+
     return false;
   };
 
   const handleSubmit = async () => {
     if (isSubmitting || !gameSession) return;
-    
+
     setIsSubmitting(true);
     setAttempts(prev => prev + 1);
-    
+
     const isCorrect = checkAnswer();
     const finalScore = isCorrect ? calculateScore() : 0;
-    
+
     const updatedSession: GameSession = {
       ...gameSession,
       endTime: new Date(),
@@ -190,11 +201,11 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
       hintsUsed,
       timeSpent: (level.timeLimit || 300) - timeRemaining,
       completed: isCorrect,
-      perfect: isCorrect && attempts === 0 && hintsUsed.length === 0
+      perfect: isCorrect && attempts === 0 && hintsUsed.length === 0,
     };
-    
+
     setGameSession(updatedSession);
-    
+
     // Usar IA para generar respuesta de feedback
     setIsLoadingAI(true);
     try {
@@ -208,38 +219,45 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
         hintsUsed: hintsUsed.length,
         userAnswer: String(userAnswer),
         correctAnswer: String(level.content.correctAnswer),
-        isCorrect
+        isCorrect,
       });
 
-      const loggieResponse = aiResponse || getLoggieResponse(isCorrect ? 'correct' : 'incorrect');
+      const loggieResponse =
+        aiResponse || getLoggieResponse(isCorrect ? 'correct' : 'incorrect');
       setCurrentLoggieResponse(loggieResponse);
-      
+
       setFeedback({
         isCorrect,
-        message: isCorrect ? level.content.explanation : 'No es correcto. ¡Inténtalo de nuevo!',
-        loggieResponse
+        message: isCorrect
+          ? level.content.explanation
+          : 'No es correcto. ¡Inténtalo de nuevo!',
+        loggieResponse,
       });
     } catch (error) {
       console.error('Error getting AI feedback:', error);
       // Fallback a respuesta estática
-      const loggieResponse = getLoggieResponse(isCorrect ? 'correct' : 'incorrect');
+      const loggieResponse = getLoggieResponse(
+        isCorrect ? 'correct' : 'incorrect'
+      );
       setCurrentLoggieResponse(loggieResponse);
-      
+
       setFeedback({
         isCorrect,
-        message: isCorrect ? level.content.explanation : 'No es correcto. ¡Inténtalo de nuevo!',
-        loggieResponse
+        message: isCorrect
+          ? level.content.explanation
+          : 'No es correcto. ¡Inténtalo de nuevo!',
+        loggieResponse,
       });
     } finally {
       setIsLoadingAI(false);
     }
-    
+
     if (isCorrect) {
       setTimeout(() => {
         onLevelComplete(updatedSession);
       }, 3000);
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -259,7 +277,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
           difficulty: level.difficulty,
           attempts: attempts,
           hintsUsed: hintsUsed.length + 1,
-          correctAnswer: String(level.content.correctAnswer)
+          correctAnswer: String(level.content.correctAnswer),
         });
 
         if (aiResponse) {
@@ -275,7 +293,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
 
   const renderQuestion = () => {
     const { type, options } = level.content;
-    
+
     if (type === 'multiple-choice' && options) {
       return (
         <div className="space-y-3">
@@ -302,7 +320,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
           <input
             type="text"
             value={userAnswer as string}
-            onChange={(e) => setUserAnswer(e.target.value)}
+            onChange={e => setUserAnswer(e.target.value)}
             className="w-full p-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-loggie-orange focus:border-transparent"
             placeholder="Escribe tu respuesta aquí..."
           />
@@ -338,7 +356,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
         </div>
       );
     }
-    
+
     return null;
   };
 
@@ -346,7 +364,12 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
     return (
       <div className="min-h-screen bg-gradient-to-br from-intelligence-blue via-magic-purple to-loggie-orange flex items-center justify-center">
         <div className="text-center">
-          <LoggieAvatar emotion="thinking" size="xl" accessory="glasses" isAnimated={true} />
+          <LoggieAvatar
+            emotion="thinking"
+            size="xl"
+            accessory="glasses"
+            isAnimated={true}
+          />
           <p className="text-white font-source mt-4">Cargando nivel...</p>
         </div>
       </div>
@@ -364,7 +387,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
           >
             ← Salir
           </button>
-          
+
           <div className="text-center">
             <h1 className="text-2xl font-orbitron font-bold text-white">
               {level.title}
@@ -373,7 +396,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
               Nivel {level.levelNumber} • Villa Verdad
             </p>
           </div>
-          
+
           <div className="text-right">
             {level.timeLimit && (
               <div className="text-white font-orbitron">
@@ -385,7 +408,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
             </div>
           </div>
         </div>
-        
+
         {/* Progress bar */}
         <div className="w-full bg-white/20 rounded-full h-2">
           <motion.div
@@ -398,7 +421,6 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Panel izquierdo - Loggie */}
         <motion.div
           initial={{ x: -100, opacity: 0 }}
@@ -422,12 +444,13 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
                 </div>
               ) : (
                 <p className="text-white font-source text-sm">
-                  {currentLoggieResponse?.text || '¡Hola! Soy Loggie y estoy aquí para ayudarte! 🦊'}
+                  {currentLoggieResponse?.text ||
+                    '¡Hola! Soy Loggie y estoy aquí para ayudarte! 🦊'}
                 </p>
               )}
             </div>
           </div>
-          
+
           {/* Pistas */}
           <div className="space-y-4">
             <button
@@ -436,7 +459,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
             >
               💡 {showHints ? 'Ocultar' : 'Ver'} Pistas ({level.hints.length})
             </button>
-            
+
             <AnimatePresence>
               {showHints && (
                 <motion.div
@@ -452,25 +475,31 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
                         hintsUsed.includes(hint.id)
                           ? 'border-energy-yellow/40 bg-energy-yellow/20 text-white'
                           : index <= currentHint
-                          ? 'border-white/20 bg-white/10 text-white/80'
-                          : 'border-white/10 bg-white/5 text-white/50'
+                            ? 'border-white/20 bg-white/10 text-white/80'
+                            : 'border-white/10 bg-white/5 text-white/50'
                       }`}
                     >
                       {hintsUsed.includes(hint.id) ? (
                         <p className="text-sm font-source">{hint.text}</p>
                       ) : index <= currentHint ? (
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-source">Pista {index + 1}</span>
+                          <span className="text-sm font-source">
+                            Pista {index + 1}
+                          </span>
                           <button
                             onClick={() => useHint(hint.id)}
                             disabled={isLoadingAI}
                             className="text-xs bg-energy-yellow text-black px-2 py-1 rounded disabled:opacity-50"
                           >
-                            {isLoadingAI ? 'Cargando...' : `Ver (-${hint.cost} pts)`}
+                            {isLoadingAI
+                              ? 'Cargando...'
+                              : `Ver (-${hint.cost} pts)`}
                           </button>
                         </div>
                       ) : (
-                        <p className="text-sm font-source">🔒 Pista bloqueada</p>
+                        <p className="text-sm font-source">
+                          🔒 Pista bloqueada
+                        </p>
                       )}
                     </div>
                   ))}
@@ -492,22 +521,20 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
                 {level.content.context}
               </p>
             </div>
-            
+
             <div className="mb-6">
               <div className="text-white font-source whitespace-pre-line text-lg leading-relaxed">
                 {level.content.problem}
               </div>
             </div>
-            
+
             <h3 className="text-xl font-orbitron font-bold text-white mb-4">
               {level.content.question}
             </h3>
           </div>
 
           {/* Área de respuesta */}
-          <div className="mb-6">
-            {renderQuestion()}
-          </div>
+          <div className="mb-6">{renderQuestion()}</div>
 
           {/* Botón de enviar */}
           <div className="flex justify-center">
@@ -518,11 +545,19 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
                 feedback?.isCorrect
                   ? 'bg-growth-green text-white cursor-not-allowed'
                   : !userAnswer || isSubmitting
-                  ? 'bg-white/20 text-white/50 cursor-not-allowed'
-                  : 'bg-loggie-orange hover:bg-orange-600 text-white hover:scale-105'
+                    ? 'bg-white/20 text-white/50 cursor-not-allowed'
+                    : 'bg-loggie-orange hover:bg-orange-600 text-white hover:scale-105'
               }`}
-              whileHover={!userAnswer || isSubmitting || feedback?.isCorrect ? {} : { scale: 1.05 }}
-              whileTap={!userAnswer || isSubmitting || feedback?.isCorrect ? {} : { scale: 0.95 }}
+              whileHover={
+                !userAnswer || isSubmitting || feedback?.isCorrect
+                  ? {}
+                  : { scale: 1.05 }
+              }
+              whileTap={
+                !userAnswer || isSubmitting || feedback?.isCorrect
+                  ? {}
+                  : { scale: 0.95 }
+              }
             >
               {isSubmitting ? (
                 <div className="flex items-center">
@@ -555,9 +590,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({ level, onLevelComplete, 
                     {feedback.isCorrect ? '🎉' : '🤔'}
                   </div>
                   <div>
-                    <p className="text-white font-source">
-                      {feedback.message}
-                    </p>
+                    <p className="text-white font-source">{feedback.message}</p>
                     {feedback.isCorrect && (
                       <div className="mt-2 text-sm text-white/80">
                         <p>🎯 Puntuación final: {calculateScore()} puntos</p>

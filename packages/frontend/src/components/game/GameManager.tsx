@@ -11,11 +11,15 @@ interface GameManagerProps {
   onBackToDashboard: () => void;
 }
 
-export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) => {
+export const GameManager: React.FC<GameManagerProps> = ({
+  onBackToDashboard,
+}) => {
   const [gameState, setGameState] = useState<GameState>('world-map');
   const [currentWorld] = useState<GameWorld>(villaVerdadWorld);
   const [currentLevel, setCurrentLevel] = useState<GameLevel | null>(null);
-  const [completedSession, setCompletedSession] = useState<GameSession | null>(null);
+  const [completedSession, setCompletedSession] = useState<GameSession | null>(
+    null
+  );
 
   const handleLevelSelect = (level: GameLevel) => {
     setCurrentLevel(level);
@@ -25,7 +29,7 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
   const handleLevelComplete = (session: GameSession) => {
     setCompletedSession(session);
     setGameState('level-complete');
-    
+
     // Auto-volver al mapa después de mostrar resultados
     setTimeout(() => {
       setGameState('world-map');
@@ -43,12 +47,13 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
     if (!completedSession || !currentLevel) return null;
 
     const isPerfect = completedSession.perfect;
-    const scorePercentage = (completedSession.score / completedSession.maxScore) * 100;
-    
+    const scorePercentage =
+      (completedSession.score / completedSession.maxScore) * 100;
+
     let performance = '';
     let performanceColor = '';
     let emoji = '';
-    
+
     if (isPerfect) {
       performance = '¡PERFECTO!';
       performanceColor = 'text-energy-yellow';
@@ -84,12 +89,14 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               className="text-8xl mb-4"
             >
               {emoji}
             </motion.div>
-            <h1 className={`text-4xl font-orbitron font-bold mb-2 ${performanceColor}`}>
+            <h1
+              className={`text-4xl font-orbitron font-bold mb-2 ${performanceColor}`}
+            >
               {performance}
             </h1>
             <h2 className="text-2xl text-white font-source">
@@ -110,21 +117,21 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
               </div>
               <div className="text-white/70 text-sm font-source">Puntos</div>
             </div>
-            
+
             <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-orbitron font-bold text-intelligence-blue">
                 {completedSession.attempts}
               </div>
               <div className="text-white/70 text-sm font-source">Intentos</div>
             </div>
-            
+
             <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-orbitron font-bold text-magic-purple">
                 {completedSession.hintsUsed.length}
               </div>
               <div className="text-white/70 text-sm font-source">Pistas</div>
             </div>
-            
+
             <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-orbitron font-bold text-growth-green">
                 {Math.floor(completedSession.timeSpent)}s
@@ -146,10 +153,13 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
                 animate={{ width: `${scorePercentage}%` }}
                 transition={{ delay: 0.8, duration: 1.5 }}
                 className={`h-full rounded-full ${
-                  isPerfect ? 'bg-energy-yellow' :
-                  scorePercentage >= 90 ? 'bg-growth-green' :
-                  scorePercentage >= 70 ? 'bg-loggie-orange' :
-                  'bg-intelligence-blue'
+                  isPerfect
+                    ? 'bg-energy-yellow'
+                    : scorePercentage >= 90
+                      ? 'bg-growth-green'
+                      : scorePercentage >= 70
+                        ? 'bg-loggie-orange'
+                        : 'bg-intelligence-blue'
                 }`}
               />
             </div>
@@ -170,7 +180,8 @@ export const GameManager: React.FC<GameManagerProps> = ({ onBackToDashboard }) =
                 🏆 ¡Logro Desbloqueado!
               </h3>
               <p className="text-white font-source">
-                "Maestro de la Lógica" - Completaste el nivel sin usar pistas y en el primer intento
+                "Maestro de la Lógica" - Completaste el nivel sin usar pistas y
+                en el primer intento
               </p>
             </motion.div>
           )}

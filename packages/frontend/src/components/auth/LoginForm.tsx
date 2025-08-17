@@ -9,7 +9,10 @@ interface LoginFormProps {
   onSuccess?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({
+  onSwitchToRegister,
+  onSuccess,
+}) => {
   const { login, isLoading } = useAuth();
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
@@ -30,7 +33,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
 
     try {
       const response = await login(credentials);
-      
+
       if (response.success) {
         onSuccess?.();
       } else {
@@ -45,7 +48,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
     const { name, value } = e.target;
     setCredentials(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Limpiar errores cuando el usuario empiece a escribir
     if (errors) setErrors('');
@@ -63,7 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           className="flex justify-center mb-4"
         >
           <LoggieAvatar
@@ -85,7 +88,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
       <form onSubmit={handleSubmit} className="magic-card space-y-6">
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Email
           </label>
           <input
@@ -102,7 +108,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Contraseña
           </label>
           <div className="relative">
@@ -180,9 +189,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSucc
         className="mt-6 text-center"
       >
         <p className="text-white/50 text-sm font-source">
-          💡 Pista: Usa las credenciales de prueba:<br/>
-          <span className="text-loggie-orange font-mono">loggie@logiverse.com</span> / 
-          <span className="text-loggie-orange font-mono">password123</span>
+          💡 Pista: Usa las credenciales de prueba:
+          <br />
+          <span className="text-loggie-orange font-mono">
+            loggie@logiverse.com
+          </span>{' '}
+          /<span className="text-loggie-orange font-mono">password123</span>
         </p>
       </motion.div>
     </motion.div>

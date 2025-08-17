@@ -22,7 +22,7 @@ export const LoggieSpeech: React.FC<LoggieSpeechProps> = ({
   onComplete,
   showAvatar = true,
   position = 'left',
-  className = ''
+  className = '',
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(autoType);
@@ -58,7 +58,7 @@ export const LoggieSpeech: React.FC<LoggieSpeechProps> = ({
   const speechBubblePositions = {
     left: 'ml-4',
     right: 'mr-4 ml-auto',
-    center: 'mx-auto'
+    center: 'mx-auto',
   };
 
   return (
@@ -99,7 +99,7 @@ export const LoggieSpeech: React.FC<LoggieSpeechProps> = ({
               <div className="w-3 h-3 bg-white/10 border-l border-b border-white/20 transform rotate-45" />
             </div>
           )}
-          
+
           {/* Contenido del mensaje */}
           <div className="relative z-10">
             <p className="text-white text-sm leading-relaxed font-source">
@@ -209,14 +209,14 @@ interface LoggieConversationProps {
 export const LoggieConversation: React.FC<LoggieConversationProps> = ({
   messages,
   onConversationComplete,
-  className = ''
+  className = '',
 }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [visibleMessages, setVisibleMessages] = useState<typeof messages>([]);
 
   useEffect(() => {
     if (messages.length === 0) return;
-    
+
     setCurrentMessageIndex(0);
     setVisibleMessages([]);
   }, [messages]);
@@ -224,11 +224,11 @@ export const LoggieConversation: React.FC<LoggieConversationProps> = ({
   const showNextMessage = () => {
     if (currentMessageIndex < messages.length) {
       const message = messages[currentMessageIndex];
-      
+
       setTimeout(() => {
         setVisibleMessages(prev => [...prev, message]);
         setCurrentMessageIndex(prev => prev + 1);
-        
+
         if (currentMessageIndex === messages.length - 1) {
           onConversationComplete?.();
         }
@@ -250,7 +250,9 @@ export const LoggieConversation: React.FC<LoggieConversationProps> = ({
             key={message.id}
             message={message.text}
             emotion={message.emotion}
-            onComplete={index === visibleMessages.length - 1 ? showNextMessage : undefined}
+            onComplete={
+              index === visibleMessages.length - 1 ? showNextMessage : undefined
+            }
             showAvatar={index === 0} // Solo mostrar avatar en el primer mensaje
           />
         ))}

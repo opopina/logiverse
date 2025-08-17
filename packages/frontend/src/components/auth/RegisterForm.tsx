@@ -9,7 +9,10 @@ interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSwitchToLogin,
+  onSuccess,
+}) => {
   const { register, isLoading } = useAuth();
   const [formData, setFormData] = useState<RegisterData>({
     username: '',
@@ -53,7 +56,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
     try {
       const response = await register(formData);
-      
+
       if (response.success) {
         onSuccess?.();
       } else {
@@ -66,21 +69,21 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'age') {
       setFormData(prev => ({
         ...prev,
-        [name]: value ? parseInt(value) : undefined
+        [name]: value ? parseInt(value) : undefined,
       }));
     } else if (name === 'confirmPassword') {
       setConfirmPassword(value);
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
-    
+
     // Limpiar errores cuando el usuario empiece a escribir
     if (errors) setErrors('');
   };
@@ -97,7 +100,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           className="flex justify-center mb-4"
         >
           <LoggieAvatar
@@ -119,7 +122,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
       <form onSubmit={handleSubmit} className="magic-card space-y-5">
         {/* Username */}
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="username"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Nombre de usuario *
           </label>
           <input
@@ -138,7 +144,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Email *
           </label>
           <input
@@ -155,7 +164,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
         {/* Age */}
         <div>
-          <label htmlFor="age" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="age"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Edad (opcional)
           </label>
           <input
@@ -173,7 +185,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Contraseña *
           </label>
           <div className="relative">
@@ -200,7 +215,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
 
         {/* Confirm Password */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/90 mb-2">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-white/90 mb-2"
+          >
             Confirmar contraseña *
           </label>
           <input
@@ -269,7 +287,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onS
         className="mt-6 text-center"
       >
         <p className="text-white/50 text-sm font-source">
-          🔒 Tu información está segura con nosotros<br/>
+          🔒 Tu información está segura con nosotros
+          <br />
           🎯 Comenzarás en Villa Verdad, el primer mundo lógico
         </p>
       </motion.div>

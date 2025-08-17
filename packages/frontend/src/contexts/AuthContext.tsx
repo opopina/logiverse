@@ -1,8 +1,21 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import type { AuthContextType, AuthState, LoginCredentials, RegisterData, AuthResponse, User } from '../types/auth';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  ReactNode,
+} from 'react';
+import type {
+  AuthContextType,
+  AuthState,
+  LoginCredentials,
+  RegisterData,
+  AuthResponse,
+  User,
+} from '../types/auth';
 
 // Actions para el reducer
-type AuthAction = 
+type AuthAction =
   | { type: 'AUTH_START' }
   | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'AUTH_FAILURE' }
@@ -75,10 +88,13 @@ export const useAuth = (): AuthContextType => {
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // Función para hacer peticiones a la API
-const apiRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
+const apiRequest = async (
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<any> => {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = localStorage.getItem('logiverse_token');
-  
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -91,11 +107,11 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}): Promise<
   try {
     const response = await fetch(url, config);
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return data;
   } catch (error) {
     console.error('API Request Error:', error);
@@ -115,7 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('logiverse_token');
     const userData = localStorage.getItem('logiverse_user');
-    
+
     if (token && userData) {
       try {
         const user = JSON.parse(userData);
@@ -128,9 +144,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<AuthResponse> => {
     dispatch({ type: 'AUTH_START' });
-    
+
     try {
       const response = await apiRequest('/auth/login', {
         method: 'POST',
@@ -141,38 +159,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Guardar en localStorage
         localStorage.setItem('logiverse_token', response.token);
         localStorage.setItem('logiverse_user', JSON.stringify(response.user));
-        
+
         // Actualizar estado
-        dispatch({ 
-          type: 'AUTH_SUCCESS', 
-          payload: { user: response.user, token: response.token } 
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: { user: response.user, token: response.token },
         });
-        
+
         return {
           success: true,
           user: response.user,
           token: response.token,
-          message: response.message || '¡Bienvenido de vuelta! 🦊'
+          message: response.message || '¡Bienvenido de vuelta! 🦊',
         };
       } else {
         dispatch({ type: 'AUTH_FAILURE' });
         return {
           success: false,
-          message: response.message || 'Error en el login'
+          message: response.message || 'Error en el login',
         };
       }
     } catch (error) {
       dispatch({ type: 'AUTH_FAILURE' });
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Error de conexión'
+        message: error instanceof Error ? error.message : 'Error de conexión',
       };
     }
   };
 
   const register = async (data: RegisterData): Promise<AuthResponse> => {
     dispatch({ type: 'AUTH_START' });
-    
+
     try {
       const response = await apiRequest('/auth/register', {
         method: 'POST',
@@ -183,32 +201,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Guardar en localStorage
         localStorage.setItem('logiverse_token', response.token);
         localStorage.setItem('logiverse_user', JSON.stringify(response.user));
-        
+
         // Actualizar estado
-        dispatch({ 
-          type: 'AUTH_SUCCESS', 
-          payload: { user: response.user, token: response.token } 
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: { user: response.user, token: response.token },
         });
-        
+
         return {
           success: true,
           user: response.user,
           token: response.token,
-          message: response.message || '¡Bienvenido a LogiVerse! 🦊'
+          message: response.message || '¡Bienvenido a LogiVerse! 🦊',
         };
       } else {
         dispatch({ type: 'AUTH_FAILURE' });
         return {
           success: false,
           message: response.message || 'Error en el registro',
-          errors: response.errors
+          errors: response.errors,
         };
       }
     } catch (error) {
       dispatch({ type: 'AUTH_FAILURE' });
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Error de conexión'
+        message: error instanceof Error ? error.message : 'Error de conexión',
       };
     }
   };
@@ -233,7 +251,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = async (): Promise<void> => {
     if (!state.token) return;
-    
+
     try {
       const response = await apiRequest('/auth/me');
       if (response.success && response.user) {
@@ -258,11 +276,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;
