@@ -8,50 +8,25 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  plugins = [
-    "react",
-    "react-hooks"
-  ]
-  environment = [
-    "nodejs",
-    "browser"
-  ]
-  style_guide = "airbnb"
-
-[[analyzers]]
-name = "typescript"
-enabled = true
-
-  [analyzers.meta]
-  style_guide = "airbnb"
-
-[[analyzers]]
-name = "docker"
-enabled = true
+  plugins = ["react"]
+  environment = ["nodejs", "browser"]
 
 [[analyzers]]
 name = "secrets"
-enabled = true
-
-[[analyzers]]
-name = "sql"
 enabled = true
 
 [[transformers]]
 name = "prettier"
 enabled = true
 
-[[transformers]]
-name = "eslint"
-enabled = true
-
-# Exclusiones específicas de LogiVerse
-[exclude_patterns]
-  - "node_modules/**"
-  - "build/**"
-  - "dist/**"
-  - "coverage/**"
-  - "*.min.js"
-  - "packages/frontend/public/**"
-  - "packages/*/prisma/migrations/**"
-  - "*.log"
+# Exclusiones específicas de LogiVerse  
+exclude_patterns = [
+  "node_modules/**",
+  "build/**", 
+  "dist/**",
+  "coverage/**",
+  "*.min.js",
+  "packages/frontend/public/**",
+  "packages/*/prisma/migrations/**",
+  "*.log"
+]
