@@ -5,6 +5,7 @@
 ![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-purple.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)
+[![DeepSource](https://app.deepsource.com/gh/opopina/logiverse.svg/?label=active+issues&show_trend=true&token=_TBBFOWgSmj1-AjMYCMOAJoq)](https://app.deepsource.com/gh/opopina/logiverse/)
 
 ## 🚀 ¿Qué es LogiVerse?
 

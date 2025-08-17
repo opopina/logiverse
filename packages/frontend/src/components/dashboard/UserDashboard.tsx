@@ -4,10 +4,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import LoggieAvatar from '../loggie/LoggieAvatar';
 import GameManager from '../game/GameManager';
 import { MultiplayerHub } from '../multiplayer/MultiplayerHub';
+import TournamentHub from '../tournaments/TournamentHub';
 
 export const UserDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'game' | 'multiplayer'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'game' | 'multiplayer' | 'tournaments'>('dashboard');
 
   if (!user) return null;
 
@@ -29,6 +30,10 @@ export const UserDashboard: React.FC = () => {
 
   const handleEnterMultiplayer = () => {
     setCurrentView('multiplayer');
+  };
+
+  const handleEnterTournaments = () => {
+    setCurrentView('tournaments');
   };
 
   const handleBackToDashboard = () => {
@@ -57,6 +62,11 @@ export const UserDashboard: React.FC = () => {
         <MultiplayerHub />
       </div>
     );
+  }
+
+  // Si estamos en torneos, mostrar TournamentHub
+  if (currentView === 'tournaments') {
+    return <TournamentHub onBack={handleBackToDashboard} />;
   }
 
   return (
@@ -244,6 +254,23 @@ export const UserDashboard: React.FC = () => {
                     <div className="text-sm opacity-90">Multijugador en tiempo real</div>
                   </div>
                   <span className="text-3xl">🏆</span>
+                </div>
+              </motion.button>
+
+              {/* 🏆 Botón de Torneos */}
+              <motion.button
+                onClick={handleEnterTournaments}
+                className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 text-white font-bold py-6 px-6 rounded-lg text-xl transition-all duration-200 shadow-2xl border-2 border-white/20 mt-4"
+                whileHover={{ scale: 1.02, rotate: -1 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center justify-center space-x-3">
+                  <span className="text-3xl">🏆</span>
+                  <div className="text-center">
+                    <div className="font-black">¡TORNEOS ÉPICOS!</div>
+                    <div className="text-sm opacity-90">Competencias de fin de semana</div>
+                  </div>
+                  <span className="text-3xl">👑</span>
                 </div>
               </motion.button>
               

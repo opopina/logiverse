@@ -10,6 +10,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { aiService, type LoggieContext } from './services/aiService.js';
 // import MultiplayerService from './services/multiplayerService.js';
+import { TournamentService } from './services/tournamentService.js';
 
 // Load environment variables
 dotenv.config();
@@ -814,8 +815,151 @@ app.get('/api/multiplayer/stats', authenticateToken, async (req: any, res) => {
   }
 });
 
+// 🏆 ===== RUTAS DE TORNEOS ÉPICOS ===== 
+
+// Obtener torneos activos
+app.get('/api/tournaments/active', async (req, res) => {
+  try {
+    const tournaments = await prisma.tournament.findMany({
+      where: {
+        status: {
+          in: ['REGISTRATION_OPEN', 'IN_PROGRESS'],
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+        },
+        _count: {
+          select: { participants: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ success: true, tournaments });
+  } catch (error) {
+    console.error('Error fetching active tournaments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error obteniendo torneos activos'
+    });
+  }
+});
+
+// Unirse a un torneo (inicializado después del tournamentService)
+app.post('/api/tournaments/:tournamentId/join', authenticateToken, async (req: any, res) => {
+  try {
+    const { tournamentId } = req.params;
+    const userId = req.user.userId;
+
+    res.json({ 
+      success: true, 
+      message: 'Función de unirse al torneo temporalmente deshabilitada - se habilitará después de probar las APIs básicas'
+    });
+  } catch (error) {
+    console.error('Error joining tournament:', error);
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Error uniéndose al torneo'
+    });
+  }
+});
+
+// Obtener detalles de un torneo específico
+app.get('/api/tournaments/:tournamentId', async (req, res) => {
+  try {
+    const { tournamentId } = req.params;
+
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+        },
+        matches: {
+          include: {
+            player1: {
+              select: { id: true, username: true, avatar: true },
+            },
+            player2: {
+              select: { id: true, username: true, avatar: true },
+            },
+            winner: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+          orderBy: [{ round: 'asc' }, { createdAt: 'asc' }],
+        },
+        winner: {
+          select: { id: true, username: true, avatar: true },
+        },
+      },
+    });
+
+    if (!tournament) {
+      return res.status(404).json({
+        success: false,
+        message: 'Torneo no encontrado'
+      });
+    }
+
+    res.json({ success: true, tournament });
+  } catch (error) {
+    console.error('Error fetching tournament details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error obteniendo detalles del torneo'
+    });
+  }
+});
+
+// Crear torneo de prueba (para desarrollo)
+app.post('/api/dev/create-tournament', async (req, res) => {
+  try {
+    const now = new Date();
+    const tournamentStart = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutos desde ahora
+
+    const tournament = await prisma.tournament.create({
+      data: {
+        name: '🧪 Torneo de Prueba',
+        type: 'SINGLE_ELIMINATION',
+        maxParticipants: 8,
+        registrationStart: now,
+        registrationEnd: new Date(now.getTime() + 3 * 60 * 1000), // 3 minutos para registrarse
+        tournamentStart,
+        entryFee: 0,
+        prizePool: 500,
+        description: '¡Torneo de prueba para testing!',
+        status: 'REGISTRATION_OPEN',
+        isPublic: true,
+        bracketData: {},
+      },
+    });
+
+    res.json({ success: true, tournament });
+  } catch (error) {
+    console.error('Error creating test tournament:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creando torneo de prueba'
+    });
+  }
+});
+
 // 🚀 Inicializar Servicio Multijugador Épico (temporalmente comentado para debuggear)
 // const multiplayerService = new MultiplayerService(prisma, io);
+
+// 🏆 Inicializar Servicio de Torneos Épico
+const tournamentService = new TournamentService(prisma, io);
 
 // WebSocket connection handling con multijugador épico
 io.on('connection', (socket) => {
