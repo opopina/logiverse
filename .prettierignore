@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+coverage/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+packages/backend/*/prisma/migrations/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env*
+
+# Git
+.git/
+
+# Docker
+docker-volumes/
+
+# Auto-generated files
+packages/frontend/public/vite.svg
+packages/frontend/src/assets/react.svg
+
+# Documentation
+*.md

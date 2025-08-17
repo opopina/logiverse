@@ -108,3 +108,13 @@ packages/backend/*/prisma/dev.db*
 # Temporary folders
 tmp/
 temp/
+
+# Code quality and analysis
+.deepsource/
+.nyc_output/
+.eslintcache
+*.tsbuildinfo
+
+# VS Code settings (optional - some teams prefer to commit these)
+.vscode/settings.json
+.vscode/launch.json
