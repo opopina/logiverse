@@ -11,53 +11,67 @@ import jwt from 'jsonwebtoken';
 import { aiService, type LoggieContext } from './services/aiService.js';
 // import MultiplayerService from './services/multiplayerService.js';
 import { TournamentService } from './services/tournamentService.js';
-import { AuthenticatedRequest, LoggieAIRequest, TournamentRequest, MultiplayerRequest } from './types/express.js';
+import {
+  AuthenticatedRequest,
+  LoggieAIRequest,
+  TournamentRequest,
+  MultiplayerRequest,
+} from './types/express.js';
 
 // Load environment variables
 dotenv.config();
 
 // Configure environment variables
-process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://logiverse:logiverse@localhost:5432/logiverse?schema=public";
-process.env.JWT_SECRET = process.env.JWT_SECRET || "logiverse-super-secret-key-change-in-production-2024";
-process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h";
-process.env.BCRYPT_SALT_ROUNDS = process.env.BCRYPT_SALT_ROUNDS || "12";
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ||
+  'postgresql://logiverse:logiverse@localhost:5432/logiverse?schema=public';
+process.env.JWT_SECRET =
+  process.env.JWT_SECRET ||
+  'logiverse-super-secret-key-change-in-production-2024';
+process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+process.env.BCRYPT_SALT_ROUNDS = process.env.BCRYPT_SALT_ROUNDS || '12';
 
 // OpenAI Configuration
-process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY || "your-openai-api-key-here";
+process.env.OPENAI_API_KEY =
+  process.env.OPENAI_API_KEY || 'your-openai-api-key-here';
 
 // Initialize Prisma Client
 const prisma = new PrismaClient();
 
 // JWT Authentication middleware
-const authenticateToken = async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+const authenticateToken = async (
+  req: AuthenticatedRequest,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Token de acceso requerido'
+      message: 'Token de acceso requerido',
     });
   }
 
   try {
     const jwtSecret = process.env.JWT_SECRET!;
     const decoded = jwt.verify(token, jwtSecret) as any;
-    
+
     // Verify session exists and is not expired
     const session = await prisma.userSession.findFirst({
       where: {
         token,
         expiresAt: {
-          gt: new Date()
-        }
-      }
+          gt: new Date(),
+        },
+      },
     });
 
     if (!session) {
       return res.status(401).json({
         success: false,
-        message: 'Token inválido o expirado'
+        message: 'Token inválido o expirado',
       });
     }
 
@@ -72,14 +86,14 @@ const authenticateToken = async (req: AuthenticatedRequest, res: express.Respons
         currentWorld: true,
         currentLevel: true,
         totalScore: true,
-        logicPoints: true
-      }
+        logicPoints: true,
+      },
     });
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Usuario no encontrado'
+        message: 'Usuario no encontrado',
       });
     }
 
@@ -89,7 +103,7 @@ const authenticateToken = async (req: AuthenticatedRequest, res: express.Respons
     console.error('JWT verification error:', error);
     return res.status(403).json({
       success: false,
-      message: 'Token inválido'
+      message: 'Token inválido',
     });
   }
 };
@@ -98,19 +112,21 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
 });
 
 const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -122,11 +138,11 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'LogiVerse API Gateway',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 
@@ -137,7 +153,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const loginSchema = z.object({
       email: z.string().email(),
-      password: z.string().min(1)
+      password: z.string().min(1),
     });
 
     const { email, password } = loginSchema.parse(req.body);
@@ -156,14 +172,14 @@ app.post('/api/auth/login', async (req, res) => {
         currentLevel: true,
         totalScore: true,
         logicPoints: true,
-        lastLogin: true
-      }
+        lastLogin: true,
+      },
     });
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Email o contraseña incorrectos'
+        message: 'Email o contraseña incorrectos',
       });
     }
 
@@ -172,17 +188,17 @@ app.post('/api/auth/login', async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Email o contraseña incorrectos'
+        message: 'Email o contraseña incorrectos',
       });
     }
 
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET!;
     const token = jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         email: user.email,
-        role: user.role 
+        role: user.role,
       },
       jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
@@ -192,15 +208,15 @@ app.post('/api/auth/login', async (req, res) => {
     await Promise.all([
       prisma.user.update({
         where: { id: user.id },
-        data: { lastLogin: new Date() }
+        data: { lastLogin: new Date() },
       }),
       prisma.userSession.create({
         data: {
           userId: user.id,
           token,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-        }
-      })
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        },
+      }),
     ]);
 
     // Remove password from response
@@ -210,22 +226,22 @@ app.post('/api/auth/login', async (req, res) => {
       success: true,
       user: userWithoutPassword,
       token,
-      message: `¡Bienvenido de vuelta, ${user.username}! 🦊`
+      message: `¡Bienvenido de vuelta, ${user.username}! 🦊`,
     });
   } catch (error) {
     console.error('Login error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Datos de login inválidos',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Error interno del servidor',
     });
   }
 });
@@ -236,7 +252,7 @@ app.post('/api/auth/register', async (req, res) => {
       username: z.string().min(3).max(20),
       email: z.string().email(),
       password: z.string().min(6),
-      age: z.number().min(8).max(120).optional()
+      age: z.number().min(8).max(120).optional(),
     });
 
     const userData = registerSchema.parse(req.body);
@@ -244,17 +260,14 @@ app.post('/api/auth/register', async (req, res) => {
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: userData.email },
-          { username: userData.username }
-        ]
-      }
+        OR: [{ email: userData.email }, { username: userData.username }],
+      },
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'Usuario ya existe con ese email o nombre de usuario'
+        message: 'Usuario ya existe con ese email o nombre de usuario',
       });
     }
 
@@ -269,7 +282,7 @@ app.post('/api/auth/register', async (req, res) => {
         email: userData.email,
         password: hashedPassword,
         age: userData.age,
-        role: 'STUDENT'
+        role: 'STUDENT',
       },
       select: {
         id: true,
@@ -281,17 +294,17 @@ app.post('/api/auth/register', async (req, res) => {
         currentLevel: true,
         totalScore: true,
         logicPoints: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET!;
     const token = jwt.sign(
-      { 
-        userId: newUser.id, 
+      {
+        userId: newUser.id,
         email: newUser.email,
-        role: newUser.role 
+        role: newUser.role,
       },
       jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
@@ -302,140 +315,152 @@ app.post('/api/auth/register', async (req, res) => {
       data: {
         userId: newUser.id,
         token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-      }
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
     });
 
     res.json({
       success: true,
       user: newUser,
       token,
-      message: '¡Bienvenido a LogiVerse! 🦊'
+      message: '¡Bienvenido a LogiVerse! 🦊',
     });
   } catch (error) {
     console.error('Registration error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Datos de registro inválidos',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Error interno del servidor',
     });
   }
 });
 
 // Logout endpoint
-app.post('/api/auth/logout', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+app.post(
+  '/api/auth/logout',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
 
-    if (token) {
-      // Remove session from database
-      await prisma.userSession.deleteMany({
-        where: { token }
+      if (token) {
+        // Remove session from database
+        await prisma.userSession.deleteMany({
+          where: { token },
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '¡Hasta luego! Vuelve pronto a LogiVerse 🦊',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error durante logout',
       });
     }
-
-    res.json({
-      success: true,
-      message: '¡Hasta luego! Vuelve pronto a LogiVerse 🦊'
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error durante logout'
-    });
   }
-});
+);
 
 // Get current user info
-app.get('/api/auth/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    res.json({
-      success: true,
-      user: req.user
-    });
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo información del usuario'
-    });
-  }
-});
-
-// Game progress routes
-app.get('/api/game/progress', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    const userId = req.user.id;
-    
-    // Get user progress from database
-    const [user, userProgress, achievements] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          currentWorld: true,
-          currentLevel: true,
-          totalScore: true,
-          logicPoints: true
-        }
-      }),
-      prisma.userProgress.findMany({
-        where: { userId },
-        orderBy: { completedAt: 'desc' }
-      }),
-      prisma.achievement.findMany({
-        where: { userId },
-        orderBy: { unlockedAt: 'desc' }
-      })
-    ]);
-
-    if (!user) {
-      return res.status(404).json({
+app.get(
+  '/api/auth/me',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      res.json({
+        success: true,
+        user: req.user,
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Usuario no encontrado'
+        message: 'Error obteniendo información del usuario',
       });
     }
-
-    const completedLevels = userProgress.filter(p => p.completed);
-    const unlockedWorlds = [...new Set(userProgress.map(p => p.worldId))];
-
-    res.json({
-      success: true,
-      progress: {
-        userId,
-        currentWorld: user.currentWorld,
-        currentLevel: user.currentLevel,
-        totalScore: user.totalScore,
-        logicPoints: user.logicPoints,
-        totalProblemsCompleted: completedLevels.length,
-        achievements: achievements.map(a => ({
-          type: a.type,
-          title: a.title,
-          description: a.description,
-          points: a.points,
-          unlockedAt: a.unlockedAt
-        })),
-        unlockedWorlds,
-        recentProgress: userProgress.slice(0, 5)
-      }
-    });
-  } catch (error) {
-    console.error('Progress fetch error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo progreso'
-    });
   }
-});
+);
+
+// Game progress routes
+app.get(
+  '/api/game/progress',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user.id;
+
+      // Get user progress from database
+      const [user, userProgress, achievements] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            currentWorld: true,
+            currentLevel: true,
+            totalScore: true,
+            logicPoints: true,
+          },
+        }),
+        prisma.userProgress.findMany({
+          where: { userId },
+          orderBy: { completedAt: 'desc' },
+        }),
+        prisma.achievement.findMany({
+          where: { userId },
+          orderBy: { unlockedAt: 'desc' },
+        }),
+      ]);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuario no encontrado',
+        });
+      }
+
+      const completedLevels = userProgress.filter(p => p.completed);
+      const unlockedWorlds = [...new Set(userProgress.map(p => p.worldId))];
+
+      res.json({
+        success: true,
+        progress: {
+          userId,
+          currentWorld: user.currentWorld,
+          currentLevel: user.currentLevel,
+          totalScore: user.totalScore,
+          logicPoints: user.logicPoints,
+          totalProblemsCompleted: completedLevels.length,
+          achievements: achievements.map(a => ({
+            type: a.type,
+            title: a.title,
+            description: a.description,
+            points: a.points,
+            unlockedAt: a.unlockedAt,
+          })),
+          unlockedWorlds,
+          recentProgress: userProgress.slice(0, 5),
+        },
+      });
+    } catch (error) {
+      console.error('Progress fetch error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error obteniendo progreso',
+      });
+    }
+  }
+);
 
 // Create test user endpoint (for development)
 app.post('/api/dev/create-test-user', async (req, res) => {
@@ -443,7 +468,7 @@ app.post('/api/dev/create-test-user', async (req, res) => {
     if (process.env.NODE_ENV === 'production') {
       return res.status(403).json({
         success: false,
-        message: 'Endpoint no disponible en producción'
+        message: 'Endpoint no disponible en producción',
       });
     }
 
@@ -453,8 +478,8 @@ app.post('/api/dev/create-test-user', async (req, res) => {
         email: 'test@logiverse.com',
         password: await bcrypt.hash('password123', 12),
         age: 15,
-        role: 'STUDENT'
-      }
+        role: 'STUDENT',
+      },
     });
 
     // Create some test achievements
@@ -465,16 +490,16 @@ app.post('/api/dev/create-test-user', async (req, res) => {
           type: 'first-steps',
           title: 'Primeros Pasos',
           description: 'Completaste tu primer nivel',
-          points: 10
+          points: 10,
         },
         {
           userId: testUser.id,
           type: 'truth-seeker',
           title: 'Buscador de la Verdad',
           description: 'Resolviste 5 problemas de lógica básica',
-          points: 25
-        }
-      ]
+          points: 25,
+        },
+      ],
     });
 
     res.json({
@@ -482,14 +507,14 @@ app.post('/api/dev/create-test-user', async (req, res) => {
       message: 'Usuario de prueba creado',
       user: {
         email: testUser.email,
-        password: 'password123'
-      }
+        password: 'password123',
+      },
     });
   } catch (error) {
     console.error('Test user creation error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error creando usuario de prueba'
+      message: 'Error creando usuario de prueba',
     });
   }
 });
@@ -500,11 +525,13 @@ app.post('/api/loggie/chat', async (req, res) => {
     const chatSchema = z.object({
       message: z.string().min(1),
       userId: z.string(),
-      context: z.object({
-        currentWorld: z.string().optional(),
-        currentLevel: z.number().optional(),
-        emotion: z.string().optional()
-      }).optional()
+      context: z
+        .object({
+          currentWorld: z.string().optional(),
+          currentLevel: z.number().optional(),
+          emotion: z.string().optional(),
+        })
+        .optional(),
     });
 
     const { message, userId, context } = chatSchema.parse(req.body);
@@ -517,7 +544,7 @@ app.post('/api/loggie/chat', async (req, res) => {
       levelType: 'logic-puzzle',
       difficulty: 1,
       attempts: 1,
-      hintsUsed: 0
+      hintsUsed: 0,
     };
 
     const aiResponse = await aiService.generateResponse(
@@ -533,233 +560,304 @@ app.post('/api/loggie/chat', async (req, res) => {
         emotion: aiResponse.emotion,
         accessory: aiResponse.accessory,
         tone: aiResponse.tone,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error('Loggie chat error:', error);
     res.status(400).json({
       success: false,
-      message: 'Error processing chat message'
+      message: 'Error processing chat message',
     });
   }
 });
 
 // 🤖 AI-Powered Loggie Responses for Game Levels
-app.post('/api/loggie/level-start', authenticateToken, async (req: LoggieAIRequest, res) => {
-  try {
-    const levelStartSchema = z.object({
-      worldId: z.string(),
-      levelId: z.string(),
-      levelTitle: z.string(),
-      levelType: z.enum(['logic-puzzle', 'truth-table', 'syllogism', 'pattern', 'debate', 'challenge']),
-      difficulty: z.number().min(1).max(5)
-    });
+app.post(
+  '/api/loggie/level-start',
+  authenticateToken,
+  async (req: LoggieAIRequest, res) => {
+    try {
+      const levelStartSchema = z.object({
+        worldId: z.string(),
+        levelId: z.string(),
+        levelTitle: z.string(),
+        levelType: z.enum([
+          'logic-puzzle',
+          'truth-table',
+          'syllogism',
+          'pattern',
+          'debate',
+          'challenge',
+        ]),
+        difficulty: z.number().min(1).max(5),
+      });
 
-    const context = levelStartSchema.parse(req.body);
-    const aiContext: LoggieContext = {
-      ...context,
-      attempts: 1,
-      hintsUsed: 0,
-      correctAnswer: ''
-    };
+      const context = levelStartSchema.parse(req.body);
+      const aiContext: LoggieContext = {
+        ...context,
+        attempts: 1,
+        hintsUsed: 0,
+        correctAnswer: '',
+      };
 
-    const aiResponse = await aiService.generateResponse(aiContext, 'level-start');
+      const aiResponse = await aiService.generateResponse(
+        aiContext,
+        'level-start'
+      );
 
-    res.json({
-      success: true,
-      loggie: aiResponse
-    });
-  } catch (error) {
-    console.error('Level start response error:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error generating level start response'
-    });
+      res.json({
+        success: true,
+        loggie: aiResponse,
+      });
+    } catch (error) {
+      console.error('Level start response error:', error);
+      res.status(400).json({
+        success: false,
+        message: 'Error generating level start response',
+      });
+    }
   }
-});
+);
 
-app.post('/api/loggie/hint', authenticateToken, async (req: LoggieAIRequest, res) => {
-  try {
-    const hintSchema = z.object({
-      worldId: z.string(),
-      levelId: z.string(),
-      levelTitle: z.string(),
-      levelType: z.enum(['logic-puzzle', 'truth-table', 'syllogism', 'pattern', 'debate', 'challenge']),
-      difficulty: z.number().min(1).max(5),
-      attempts: z.number(),
-      hintsUsed: z.number(),
-      correctAnswer: z.string()
-    });
+app.post(
+  '/api/loggie/hint',
+  authenticateToken,
+  async (req: LoggieAIRequest, res) => {
+    try {
+      const hintSchema = z.object({
+        worldId: z.string(),
+        levelId: z.string(),
+        levelTitle: z.string(),
+        levelType: z.enum([
+          'logic-puzzle',
+          'truth-table',
+          'syllogism',
+          'pattern',
+          'debate',
+          'challenge',
+        ]),
+        difficulty: z.number().min(1).max(5),
+        attempts: z.number(),
+        hintsUsed: z.number(),
+        correctAnswer: z.string(),
+      });
 
-    const context = hintSchema.parse(req.body);
-    const aiContext: LoggieContext = context;
+      const context = hintSchema.parse(req.body);
+      const aiContext: LoggieContext = context;
 
-    const aiResponse = await aiService.generateResponse(aiContext, 'hint');
+      const aiResponse = await aiService.generateResponse(aiContext, 'hint');
 
-    res.json({
-      success: true,
-      loggie: aiResponse
-    });
-  } catch (error) {
-    console.error('Hint response error:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error generating hint response'
-    });
+      res.json({
+        success: true,
+        loggie: aiResponse,
+      });
+    } catch (error) {
+      console.error('Hint response error:', error);
+      res.status(400).json({
+        success: false,
+        message: 'Error generating hint response',
+      });
+    }
   }
-});
+);
 
-app.post('/api/loggie/feedback', authenticateToken, async (req: LoggieAIRequest, res) => {
-  try {
-    const feedbackSchema = z.object({
-      worldId: z.string(),
-      levelId: z.string(),
-      levelTitle: z.string(),
-      levelType: z.enum(['logic-puzzle', 'truth-table', 'syllogism', 'pattern', 'debate', 'challenge']),
-      difficulty: z.number().min(1).max(5),
-      attempts: z.number(),
-      hintsUsed: z.number(),
-      userAnswer: z.string(),
-      correctAnswer: z.string(),
-      isCorrect: z.boolean()
-    });
+app.post(
+  '/api/loggie/feedback',
+  authenticateToken,
+  async (req: LoggieAIRequest, res) => {
+    try {
+      const feedbackSchema = z.object({
+        worldId: z.string(),
+        levelId: z.string(),
+        levelTitle: z.string(),
+        levelType: z.enum([
+          'logic-puzzle',
+          'truth-table',
+          'syllogism',
+          'pattern',
+          'debate',
+          'challenge',
+        ]),
+        difficulty: z.number().min(1).max(5),
+        attempts: z.number(),
+        hintsUsed: z.number(),
+        userAnswer: z.string(),
+        correctAnswer: z.string(),
+        isCorrect: z.boolean(),
+      });
 
-    const context = feedbackSchema.parse(req.body);
-    const aiContext: LoggieContext = context;
+      const context = feedbackSchema.parse(req.body);
+      const aiContext: LoggieContext = context;
 
-    const responseType = context.isCorrect ? 'correct' : 'incorrect';
-    const aiResponse = await aiService.generateResponse(aiContext, responseType);
+      const responseType = context.isCorrect ? 'correct' : 'incorrect';
+      const aiResponse = await aiService.generateResponse(
+        aiContext,
+        responseType
+      );
 
-    res.json({
-      success: true,
-      loggie: aiResponse
-    });
-  } catch (error) {
-    console.error('Feedback response error:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error generating feedback response'
-    });
+      res.json({
+        success: true,
+        loggie: aiResponse,
+      });
+    } catch (error) {
+      console.error('Feedback response error:', error);
+      res.status(400).json({
+        success: false,
+        message: 'Error generating feedback response',
+      });
+    }
   }
-});
+);
 
-app.post('/api/loggie/encouragement', authenticateToken, async (req: LoggieAIRequest, res) => {
-  try {
-    const encouragementSchema = z.object({
-      worldId: z.string(),
-      levelId: z.string(),
-      levelTitle: z.string(),
-      levelType: z.enum(['logic-puzzle', 'truth-table', 'syllogism', 'pattern', 'debate', 'challenge']),
-      difficulty: z.number().min(1).max(5),
-      attempts: z.number(),
-      hintsUsed: z.number(),
-      correctAnswer: z.string()
-    });
+app.post(
+  '/api/loggie/encouragement',
+  authenticateToken,
+  async (req: LoggieAIRequest, res) => {
+    try {
+      const encouragementSchema = z.object({
+        worldId: z.string(),
+        levelId: z.string(),
+        levelTitle: z.string(),
+        levelType: z.enum([
+          'logic-puzzle',
+          'truth-table',
+          'syllogism',
+          'pattern',
+          'debate',
+          'challenge',
+        ]),
+        difficulty: z.number().min(1).max(5),
+        attempts: z.number(),
+        hintsUsed: z.number(),
+        correctAnswer: z.string(),
+      });
 
-    const context = encouragementSchema.parse(req.body);
-    const aiContext: LoggieContext = context;
+      const context = encouragementSchema.parse(req.body);
+      const aiContext: LoggieContext = context;
 
-    const aiResponse = await aiService.generateResponse(aiContext, 'encouragement');
+      const aiResponse = await aiService.generateResponse(
+        aiContext,
+        'encouragement'
+      );
 
-    res.json({
-      success: true,
-      loggie: aiResponse
-    });
-  } catch (error) {
-    console.error('Encouragement response error:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error generating encouragement response'
-    });
+      res.json({
+        success: true,
+        loggie: aiResponse,
+      });
+    } catch (error) {
+      console.error('Encouragement response error:', error);
+      res.status(400).json({
+        success: false,
+        message: 'Error generating encouragement response',
+      });
+    }
   }
-});
+);
 
-app.post('/api/loggie/custom-hint', authenticateToken, async (req: LoggieAIRequest, res) => {
-  try {
-    const customHintSchema = z.object({
-      worldId: z.string(),
-      levelId: z.string(),
-      levelTitle: z.string(),
-      levelType: z.enum(['logic-puzzle', 'truth-table', 'syllogism', 'pattern', 'debate', 'challenge']),
-      difficulty: z.number().min(1).max(5),
-      attempts: z.number(),
-      hintsUsed: z.number(),
-      correctAnswer: z.string(),
-      specificQuestion: z.string()
-    });
+app.post(
+  '/api/loggie/custom-hint',
+  authenticateToken,
+  async (req: LoggieAIRequest, res) => {
+    try {
+      const customHintSchema = z.object({
+        worldId: z.string(),
+        levelId: z.string(),
+        levelTitle: z.string(),
+        levelType: z.enum([
+          'logic-puzzle',
+          'truth-table',
+          'syllogism',
+          'pattern',
+          'debate',
+          'challenge',
+        ]),
+        difficulty: z.number().min(1).max(5),
+        attempts: z.number(),
+        hintsUsed: z.number(),
+        correctAnswer: z.string(),
+        specificQuestion: z.string(),
+      });
 
-    const context = customHintSchema.parse(req.body);
-    const aiContext: LoggieContext = {
-      worldId: context.worldId,
-      levelId: context.levelId,
-      levelTitle: context.levelTitle,
-      levelType: context.levelType,
-      difficulty: context.difficulty,
-      attempts: context.attempts,
-      hintsUsed: context.hintsUsed,
-      correctAnswer: context.correctAnswer
-    };
+      const context = customHintSchema.parse(req.body);
+      const aiContext: LoggieContext = {
+        worldId: context.worldId,
+        levelId: context.levelId,
+        levelTitle: context.levelTitle,
+        levelType: context.levelType,
+        difficulty: context.difficulty,
+        attempts: context.attempts,
+        hintsUsed: context.hintsUsed,
+        correctAnswer: context.correctAnswer,
+      };
 
-    const aiResponse = await aiService.generateCustomHint(aiContext, context.specificQuestion);
+      const aiResponse = await aiService.generateCustomHint(
+        aiContext,
+        context.specificQuestion
+      );
 
-    res.json({
-      success: true,
-      loggie: aiResponse
-    });
-  } catch (error) {
-    console.error('Custom hint response error:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error generating custom hint response'
-    });
+      res.json({
+        success: true,
+        loggie: aiResponse,
+      });
+    } catch (error) {
+      console.error('Custom hint response error:', error);
+      res.status(400).json({
+        success: false,
+        message: 'Error generating custom hint response',
+      });
+    }
   }
-});
+);
 
 // 🚀 RUTAS MULTIJUGADOR ÉPICAS - ¡LA REVOLUCIÓN DE LOGIVERSE!
 
 // Obtener salas disponibles
-app.get('/api/multiplayer/rooms', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    // Mock data para empezar - pronto con datos reales
-    const mockRooms = [
-      {
-        id: 'room-1',
-        name: '🏆 Arena de Lógica Épica',
-        type: 'RANKED',
-        currentPlayers: 3,
-        maxPlayers: 4,
-        difficulty: [1, 2],
-        worlds: ['villa-verdad'],
-        status: 'WAITING'
-      },
-      {
-        id: 'room-2', 
-        name: '🧩 Puzzles Rápidos',
-        type: 'SPEED',
-        currentPlayers: 2,
-        maxPlayers: 6,
-        difficulty: [2, 3],
-        worlds: ['villa-verdad'],
-        status: 'WAITING'
-      }
-    ];
+app.get(
+  '/api/multiplayer/rooms',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      // Mock data para empezar - pronto con datos reales
+      const mockRooms = [
+        {
+          id: 'room-1',
+          name: '🏆 Arena de Lógica Épica',
+          type: 'RANKED',
+          currentPlayers: 3,
+          maxPlayers: 4,
+          difficulty: [1, 2],
+          worlds: ['villa-verdad'],
+          status: 'WAITING',
+        },
+        {
+          id: 'room-2',
+          name: '🧩 Puzzles Rápidos',
+          type: 'SPEED',
+          currentPlayers: 2,
+          maxPlayers: 6,
+          difficulty: [2, 3],
+          worlds: ['villa-verdad'],
+          status: 'WAITING',
+        },
+      ];
 
-    res.json({
-      success: true,
-      rooms: mockRooms,
-      message: '¡Salas multijugador disponibles! (Versión inicial)'
-    });
-  } catch (error) {
-    console.error('Error fetching rooms:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo salas'
-    });
+      res.json({
+        success: true,
+        rooms: mockRooms,
+        message: '¡Salas multijugador disponibles! (Versión inicial)',
+      });
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error obteniendo salas',
+      });
+    }
   }
-});
+);
 
-// Obtener tabla de clasificación 
+// Obtener tabla de clasificación
 app.get('/api/multiplayer/leaderboard', async (req, res) => {
   try {
     // Mock leaderboard - pronto con datos reales
@@ -768,55 +866,59 @@ app.get('/api/multiplayer/leaderboard', async (req, res) => {
       { rank: 2, username: 'DebateKing', score: 2693, gamesWon: 38 },
       { rank: 3, username: 'PuzzleQueen', score: 2541, gamesWon: 32 },
       { rank: 4, username: 'ThinkFast', score: 2398, gamesWon: 28 },
-      { rank: 5, username: 'LogicNinja', score: 2256, gamesWon: 25 }
+      { rank: 5, username: 'LogicNinja', score: 2256, gamesWon: 25 },
     ];
 
     res.json({
       success: true,
       leaderboard: mockLeaderboard,
-      message: '¡Top jugadores de LogiVerse! 🏆'
+      message: '¡Top jugadores de LogiVerse! 🏆',
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
     res.status(500).json({
       success: false,
-      message: 'Error obteniendo tabla de clasificación'
+      message: 'Error obteniendo tabla de clasificación',
     });
   }
 });
 
 // Obtener estadísticas de jugador
-app.get('/api/multiplayer/stats', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    // Mock stats - pronto con datos reales del usuario
-    const mockStats = {
-      globalRank: 142,
-      eloRating: 1456,
-      totalGamesPlayed: 23,
-      totalGamesWon: 15,
-      winRate: '65%',
-      averageTime: 45.2,
-      favoriteWorld: 'Villa Verdad',
-      currentStreak: 3,
-      maxStreak: 8,
-      achievements: ['Primera Victoria', 'Velocista', 'Pensador Rápido']
-    };
+app.get(
+  '/api/multiplayer/stats',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      // Mock stats - pronto con datos reales del usuario
+      const mockStats = {
+        globalRank: 142,
+        eloRating: 1456,
+        totalGamesPlayed: 23,
+        totalGamesWon: 15,
+        winRate: '65%',
+        averageTime: 45.2,
+        favoriteWorld: 'Villa Verdad',
+        currentStreak: 3,
+        maxStreak: 8,
+        achievements: ['Primera Victoria', 'Velocista', 'Pensador Rápido'],
+      };
 
-    res.json({
-      success: true,
-      stats: mockStats,
-      message: '¡Tus estadísticas de batallas lógicas! 📊'
-    });
-  } catch (error) {
-    console.error('Error fetching player stats:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo estadísticas'
-    });
+      res.json({
+        success: true,
+        stats: mockStats,
+        message: '¡Tus estadísticas de batallas lógicas! 📊',
+      });
+    } catch (error) {
+      console.error('Error fetching player stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error obteniendo estadísticas',
+      });
+    }
   }
-});
+);
 
-// 🏆 ===== RUTAS DE TORNEOS ÉPICOS ===== 
+// 🏆 ===== RUTAS DE TORNEOS ÉPICOS =====
 
 // Obtener torneos activos
 app.get('/api/tournaments/active', async (req, res) => {
@@ -847,29 +949,35 @@ app.get('/api/tournaments/active', async (req, res) => {
     console.error('Error fetching active tournaments:', error);
     res.status(500).json({
       success: false,
-      message: 'Error obteniendo torneos activos'
+      message: 'Error obteniendo torneos activos',
     });
   }
 });
 
 // Unirse a un torneo (inicializado después del tournamentService)
-app.post('/api/tournaments/:tournamentId/join', authenticateToken, async (req: TournamentRequest, res) => {
-  try {
-    const { tournamentId } = req.params;
-    const userId = req.user.userId;
+app.post(
+  '/api/tournaments/:tournamentId/join',
+  authenticateToken,
+  async (req: TournamentRequest, res) => {
+    try {
+      const { tournamentId } = req.params;
+      const userId = req.user.userId;
 
-    res.json({ 
-      success: true, 
-      message: 'Función de unirse al torneo temporalmente deshabilitada - se habilitará después de probar las APIs básicas'
-    });
-  } catch (error) {
-    console.error('Error joining tournament:', error);
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Error uniéndose al torneo'
-    });
+      res.json({
+        success: true,
+        message:
+          'Función de unirse al torneo temporalmente deshabilitada - se habilitará después de probar las APIs básicas',
+      });
+    } catch (error) {
+      console.error('Error joining tournament:', error);
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : 'Error uniéndose al torneo',
+      });
+    }
   }
-});
+);
 
 // Obtener detalles de un torneo específico
 app.get('/api/tournaments/:tournamentId', async (req, res) => {
@@ -909,7 +1017,7 @@ app.get('/api/tournaments/:tournamentId', async (req, res) => {
     if (!tournament) {
       return res.status(404).json({
         success: false,
-        message: 'Torneo no encontrado'
+        message: 'Torneo no encontrado',
       });
     }
 
@@ -918,7 +1026,7 @@ app.get('/api/tournaments/:tournamentId', async (req, res) => {
     console.error('Error fetching tournament details:', error);
     res.status(500).json({
       success: false,
-      message: 'Error obteniendo detalles del torneo'
+      message: 'Error obteniendo detalles del torneo',
     });
   }
 });
@@ -951,7 +1059,7 @@ app.post('/api/dev/create-tournament', async (req, res) => {
     console.error('Error creating test tournament:', error);
     res.status(500).json({
       success: false,
-      message: 'Error creando torneo de prueba'
+      message: 'Error creando torneo de prueba',
     });
   }
 });
@@ -963,7 +1071,7 @@ app.post('/api/dev/create-tournament', async (req, res) => {
 const tournamentService = new TournamentService(prisma, io);
 
 // WebSocket connection handling con multijugador épico
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log(`🦊 User connected: ${socket.id}`);
 
   // Eventos originales (mantener compatibilidad)
@@ -973,17 +1081,17 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('user-joined', socket.id);
   });
 
-  socket.on('loggie-emotion-change', (data) => {
+  socket.on('loggie-emotion-change', data => {
     socket.broadcast.emit('loggie-emotion-update', {
       emotion: data.emotion,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   });
 
-  socket.on('chat-message', (data) => {
+  socket.on('chat-message', data => {
     socket.broadcast.emit('new-message', {
       ...data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   });
 
@@ -999,19 +1107,26 @@ io.on('connection', (socket) => {
 });
 
 // Error handling middleware
-app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error'
-  });
-});
+app.use(
+  (
+    error: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error('Unhandled error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+);
 
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found'
+    message: 'Endpoint not found',
   });
 });
 

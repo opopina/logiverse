@@ -7,7 +7,13 @@ interface AILoggieContext {
   worldId: string;
   levelId: string;
   levelTitle: string;
-  levelType: 'logic-puzzle' | 'truth-table' | 'syllogism' | 'pattern' | 'debate' | 'challenge';
+  levelType:
+    | 'logic-puzzle'
+    | 'truth-table'
+    | 'syllogism'
+    | 'pattern'
+    | 'debate'
+    | 'challenge';
   difficulty: number;
   attempts?: number;
   hintsUsed?: number;
@@ -19,12 +25,27 @@ interface AILoggieContext {
 interface UseAILoggieResult {
   isLoading: boolean;
   error: string | null;
-  getLevelStartResponse: (context: AILoggieContext) => Promise<LoggieResponse | null>;
+  getLevelStartResponse: (
+    context: AILoggieContext
+  ) => Promise<LoggieResponse | null>;
   getHintResponse: (context: AILoggieContext) => Promise<LoggieResponse | null>;
-  getFeedbackResponse: (context: AILoggieContext & { userAnswer: string; correctAnswer: string; isCorrect: boolean }) => Promise<LoggieResponse | null>;
-  getEncouragementResponse: (context: AILoggieContext) => Promise<LoggieResponse | null>;
-  getCustomHintResponse: (context: AILoggieContext & { specificQuestion: string }) => Promise<LoggieResponse | null>;
-  sendChatMessage: (message: string, context?: Partial<AILoggieContext>) => Promise<LoggieResponse | null>;
+  getFeedbackResponse: (
+    context: AILoggieContext & {
+      userAnswer: string;
+      correctAnswer: string;
+      isCorrect: boolean;
+    }
+  ) => Promise<LoggieResponse | null>;
+  getEncouragementResponse: (
+    context: AILoggieContext
+  ) => Promise<LoggieResponse | null>;
+  getCustomHintResponse: (
+    context: AILoggieContext & { specificQuestion: string }
+  ) => Promise<LoggieResponse | null>;
+  sendChatMessage: (
+    message: string,
+    context?: Partial<AILoggieContext>
+  ) => Promise<LoggieResponse | null>;
 }
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -33,13 +54,16 @@ export const useAILoggie = (): UseAILoggieResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const makeRequest = async (endpoint: string, data: Record<string, unknown>): Promise<LoggieResponse | null> => {
+  const makeRequest = async (
+    endpoint: string,
+    data: Record<string, unknown>
+  ): Promise<LoggieResponse | null> => {
     setIsLoading(true);
     setError(null);
 
     try {
       const token = localStorage.getItem('logiverse_token');
-      
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -54,40 +78,47 @@ export const useAILoggie = (): UseAILoggieResult => {
       }
 
       const result = await response.json();
-      
+
       if (result.success && result.loggie) {
         return result.loggie;
       } else {
-        throw new Error(result.message || 'Error al obtener respuesta de Loggie');
+        throw new Error(
+          result.message || 'Error al obtener respuesta de Loggie'
+        );
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error de conexión';
       setError(errorMessage);
       console.error('AI Loggie error:', err);
-      
+
       // Fallback response si falla la API
       return {
         text: '¡Hola! Soy Loggie. Parece que tengo problemas técnicos, pero estoy aquí para ayudarte con la lógica! 🦊',
         emotion: 'friendly',
         context: 'level-start',
-        accessory: 'scarf'
+        accessory: 'scarf',
       };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getLevelStartResponse = async (context: AILoggieContext): Promise<LoggieResponse | null> => {
+  const getLevelStartResponse = async (
+    context: AILoggieContext
+  ): Promise<LoggieResponse | null> => {
     return makeRequest('/loggie/level-start', {
       worldId: context.worldId,
       levelId: context.levelId,
       levelTitle: context.levelTitle,
       levelType: context.levelType,
-      difficulty: context.difficulty
+      difficulty: context.difficulty,
     });
   };
 
-  const getHintResponse = async (context: AILoggieContext): Promise<LoggieResponse | null> => {
+  const getHintResponse = async (
+    context: AILoggieContext
+  ): Promise<LoggieResponse | null> => {
     if (!context.attempts || !context.hintsUsed || !context.correctAnswer) {
       throw new Error('Faltan datos para generar pista');
     }
@@ -100,12 +131,16 @@ export const useAILoggie = (): UseAILoggieResult => {
       difficulty: context.difficulty,
       attempts: context.attempts,
       hintsUsed: context.hintsUsed,
-      correctAnswer: context.correctAnswer
+      correctAnswer: context.correctAnswer,
     });
   };
 
   const getFeedbackResponse = async (
-    context: AILoggieContext & { userAnswer: string; correctAnswer: string; isCorrect: boolean }
+    context: AILoggieContext & {
+      userAnswer: string;
+      correctAnswer: string;
+      isCorrect: boolean;
+    }
   ): Promise<LoggieResponse | null> => {
     if (!context.attempts || !context.hintsUsed) {
       throw new Error('Faltan datos para generar feedback');
@@ -121,11 +156,13 @@ export const useAILoggie = (): UseAILoggieResult => {
       hintsUsed: context.hintsUsed,
       userAnswer: context.userAnswer,
       correctAnswer: context.correctAnswer,
-      isCorrect: context.isCorrect
+      isCorrect: context.isCorrect,
     });
   };
 
-  const getEncouragementResponse = async (context: AILoggieContext): Promise<LoggieResponse | null> => {
+  const getEncouragementResponse = async (
+    context: AILoggieContext
+  ): Promise<LoggieResponse | null> => {
     if (!context.attempts || !context.hintsUsed || !context.correctAnswer) {
       throw new Error('Faltan datos para generar ánimo');
     }
@@ -138,7 +175,7 @@ export const useAILoggie = (): UseAILoggieResult => {
       difficulty: context.difficulty,
       attempts: context.attempts,
       hintsUsed: context.hintsUsed,
-      correctAnswer: context.correctAnswer
+      correctAnswer: context.correctAnswer,
     });
   };
 
@@ -158,12 +195,12 @@ export const useAILoggie = (): UseAILoggieResult => {
       attempts: context.attempts,
       hintsUsed: context.hintsUsed,
       correctAnswer: context.correctAnswer,
-      specificQuestion: context.specificQuestion
+      specificQuestion: context.specificQuestion,
     });
   };
 
   const sendChatMessage = async (
-    message: string, 
+    message: string,
     context?: Partial<AILoggieContext>
   ): Promise<LoggieResponse | null> => {
     return makeRequest('/loggie/chat', {
@@ -172,8 +209,8 @@ export const useAILoggie = (): UseAILoggieResult => {
       context: {
         currentWorld: context?.worldId || 'villa-verdad',
         currentLevel: context?.difficulty || 1,
-        emotion: 'friendly'
-      }
+        emotion: 'friendly',
+      },
     });
   };
 

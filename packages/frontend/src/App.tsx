@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoggieAvatar from './components/loggie/LoggieAvatar';
 import type { LoggieEmotion } from './components/loggie/LoggieAvatar';
-import LoggieSpeech, { LoggieConversation } from './components/loggie/LoggieSpeech';
+import LoggieSpeech, {
+  LoggieConversation,
+} from './components/loggie/LoggieSpeech';
 import AuthModal from './components/auth/AuthModal';
 import UserDashboard from './components/dashboard/UserDashboard';
 
@@ -11,10 +13,18 @@ import UserDashboard from './components/dashboard/UserDashboard';
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [currentEmotion, setCurrentEmotion] = useState<LoggieEmotion>('friendly');
+  const [currentEmotion, setCurrentEmotion] =
+    useState<LoggieEmotion>('friendly');
   const [showConversation, setShowConversation] = useState(false);
 
-  const emotions: LoggieEmotion[] = ['friendly', 'happy', 'thinking', 'surprised', 'celebrating', 'challenging'];
+  const emotions: LoggieEmotion[] = [
+    'friendly',
+    'happy',
+    'thinking',
+    'surprised',
+    'celebrating',
+    'challenging',
+  ];
 
   // 🎯 Handlers estables para evitar re-renders
   const handleRandomEmotion = useCallback(() => {
@@ -38,20 +48,20 @@ const AppContent: React.FC = () => {
       id: '1',
       text: '¡Hola! Soy Loggie, tu compañero en LogiVerse 🦊',
       emotion: 'happy' as LoggieEmotion,
-      delay: 500
+      delay: 500,
     },
     {
-      id: '2', 
+      id: '2',
       text: 'Para acceder a todas mis características, ¡necesitas registrarte!',
       emotion: 'challenging' as LoggieEmotion,
-      delay: 2000
+      delay: 2000,
     },
     {
       id: '3',
       text: '¿Estás listo para una aventura lógica increíble?',
       emotion: 'celebrating' as LoggieEmotion,
-      delay: 2000
-    }
+      delay: 2000,
+    },
   ];
 
   // Si está cargando, mostrar loading
@@ -106,7 +116,6 @@ const AppContent: React.FC = () => {
 
       {/* Contenido principal */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
         {/* Panel izquierdo - Loggie Interactive */}
         <motion.div
           initial={{ x: -100, opacity: 0 }}
@@ -117,7 +126,7 @@ const AppContent: React.FC = () => {
           <h2 className="text-2xl font-orbitron font-bold text-white mb-6 text-center">
             Conoce a Loggie
           </h2>
-          
+
           {/* Avatar principal */}
           <div className="flex justify-center mb-6">
             <LoggieAvatar
@@ -131,7 +140,7 @@ const AppContent: React.FC = () => {
 
           {/* Selector de emociones */}
           <div className="grid grid-cols-3 gap-2 mb-6">
-            {emotions.map((emotion) => (
+            {emotions.map(emotion => (
               <button
                 key={emotion}
                 onClick={() => handleEmotionClick(emotion)}
@@ -150,9 +159,11 @@ const AppContent: React.FC = () => {
               onClick={handleToggleConversation}
               className="w-full loggie-button"
             >
-              {showConversation ? 'Detener Conversación' : 'Iniciar Conversación'}
+              {showConversation
+                ? 'Detener Conversación'
+                : 'Iniciar Conversación'}
             </button>
-            
+
             <button
               onClick={handleShowAuthModal}
               className="w-full bg-growth-green hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
@@ -177,7 +188,9 @@ const AppContent: React.FC = () => {
             {showConversation ? (
               <LoggieConversation
                 messages={sampleConversation}
-                onConversationComplete={() => console.log('Conversación completada!')}
+                onConversationComplete={() =>
+                  console.log('Conversación completada!')
+                }
               />
             ) : (
               <motion.div
@@ -191,7 +204,7 @@ const AppContent: React.FC = () => {
                 <p className="text-sm mb-6">
                   O toca a Loggie para cambiar su expresión 😊
                 </p>
-                
+
                 {/* Botones de autenticación */}
                 <div className="space-y-3">
                   <button
@@ -220,9 +233,9 @@ const AppContent: React.FC = () => {
         <h3 className="text-xl font-orbitron font-bold text-white mb-4 text-center">
           Estados Emocionales de Loggie
         </h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {emotions.map((emotion) => (
+          {emotions.map(emotion => (
             <motion.div
               key={emotion}
               className="text-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer"

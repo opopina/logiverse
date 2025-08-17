@@ -27,7 +27,13 @@ export interface GameLevel {
   levelNumber: number;
   title: string;
   description: string;
-  type: 'logic-puzzle' | 'truth-table' | 'syllogism' | 'pattern' | 'debate' | 'challenge';
+  type:
+    | 'logic-puzzle'
+    | 'truth-table'
+    | 'syllogism'
+    | 'pattern'
+    | 'debate'
+    | 'challenge';
   difficulty: 1 | 2 | 3 | 4 | 5;
   maxScore: number;
   timeLimit?: number; // en segundos
@@ -43,7 +49,12 @@ export interface LevelContent {
   problem: string;
   context?: string;
   question: string;
-  type: 'multiple-choice' | 'true-false' | 'fill-blank' | 'drag-drop' | 'text-input';
+  type:
+    | 'multiple-choice'
+    | 'true-false'
+    | 'fill-blank'
+    | 'drag-drop'
+    | 'text-input';
   options?: string[];
   correctAnswer: string | string[] | number;
   explanation: string;
@@ -114,8 +125,20 @@ export interface Achievement {
 
 export interface LoggieResponse {
   text: string;
-  emotion: 'happy' | 'thinking' | 'surprised' | 'celebrating' | 'friendly' | 'challenging';
-  context: 'hint' | 'correct' | 'incorrect' | 'level-start' | 'level-complete' | 'motivation';
+  emotion:
+    | 'happy'
+    | 'thinking'
+    | 'surprised'
+    | 'celebrating'
+    | 'friendly'
+    | 'challenging';
+  context:
+    | 'hint'
+    | 'correct'
+    | 'incorrect'
+    | 'level-start'
+    | 'level-complete'
+    | 'motivation';
   accessory?: 'none' | 'glasses' | 'scarf';
 }
 
